@@ -1,0 +1,1 @@
+const standardWidth = 750;
