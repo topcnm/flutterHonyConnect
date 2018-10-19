@@ -15,6 +15,7 @@ import '../../ui/toast.dart';
 import '../../ui/carousel.dart';
 
 import '../../model/newsItem.dart';
+import '../newsDetail_view.dart';
 
 class NewsIndexPage extends StatefulWidget {
   @override
@@ -55,6 +56,7 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
 
   void scrollListener() {
     if (controller.position.extentAfter < 10 && pageNo < totalPageMount) {
+      print('-----------------------i am trggered, pageNo is $pageNo');
       renderPageAsPageNo(pageNo + 1);
     }
   }
@@ -146,7 +148,7 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
         centerTitle: true,
         actions: <Widget>[
           new IconButton(
-              icon: new Icon(Icons.message),
+              icon: new Icon(IconData(0xe61e, fontFamily: 'aliFont'), color: emptyColor,),
               onPressed: null
           )
         ],
@@ -184,7 +186,14 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
                   );
                   return new NewsComponent(
                     newsInfo: _item,
-                    onTap: () => {},
+                    onTap: () {
+                      print('----------------${item['cntntId']}');
+                      Navigator.of(context).push(
+                        new MaterialPageRoute(
+                            builder: (BuildContext context) => new NewsDetail(cntntId: item['cntntId'])
+                        )
+                      );
+                    },
                   );
                 }
               )
@@ -221,7 +230,7 @@ class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
   Widget build(BuildContext context) {
     double winWidth = MediaQuery.of(context).size.width;
     return new InkWell(
-      onTap: () => {},
+      onTap: widget.onTap,
       child: new Container(
         height: getWidth(202.0, winWidth),
         padding: EdgeInsets.symmetric(
@@ -254,7 +263,12 @@ class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
                           color: Colors.black,
                         ),
                       ),
-                      new Text(widget.newsInfo.rlsTime)
+                      new Text(
+                        widget.newsInfo.rlsTime,
+                        style: new TextStyle(
+                          color: assistFontColor
+                        ),
+                      )
                     ],
                   ),
                 )

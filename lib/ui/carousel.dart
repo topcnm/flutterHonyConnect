@@ -127,9 +127,6 @@ class _HonyCarouselState extends State<HonyCarousel> {
             left: 0.0,
             right: 0.0,
             child: new Container(
-              decoration: new BoxDecoration(
-                color: Colors.grey[800].withOpacity(0.5),
-              ),
               padding: new EdgeInsets.all(10.0),
               child: new Center(
                 child: new HonyDotShower(

@@ -12,3 +12,4 @@ const assistFontColor = Color(0xFF909090);
 
 const bottomNavColor = Color(0xFF25292c);
 const errorBgColor = Color(0xFFfdfa90);
+const greyBgColor = Color(0xFFf5f5f5);

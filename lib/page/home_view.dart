@@ -79,10 +79,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 borderSide: new BorderSide(width: 0.0),
               ),
               tabs: <Widget>[
-                new CustomTabItem(_activeIndex == 0, Icons.message, "News"),
-                new CustomTabItem(_activeIndex == 1, Icons.insert_invitation, "Investments"),
-                new CustomTabItem(_activeIndex == 2, Icons.folder_open, "Asset"),
-                new CustomTabItem(_activeIndex == 3, Icons.contact_mail, "Mine"),
+                new CustomTabItem(_activeIndex == 0, IconData(0xe86e, fontFamily: 'aliFont'), "News"),
+                new CustomTabItem(_activeIndex == 1, IconData(0xe67d, fontFamily: 'aliFont'), "Invest"),
+                new CustomTabItem(_activeIndex == 2, IconData(0xe62c, fontFamily: 'aliFont'), "Asset"),
+                new CustomTabItem(_activeIndex == 3, IconData(0xe6b6, fontFamily: 'aliFont'), "Mine"),
               ]
             )
         ),

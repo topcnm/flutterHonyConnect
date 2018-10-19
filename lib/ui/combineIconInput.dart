@@ -56,7 +56,11 @@ class _CombineIconInputState extends State<CombineIconInput> implements PixelCom
   Widget build(BuildContext context) {
     double winWidth = MediaQuery.of(context).size.width;
     Widget eyeWidget = widget.hasEye ? new IconButton(
-      icon: !eyeOpen ? new Icon(Icons.security) : new Icon(Icons.remove_red_eye),
+      icon: !eyeOpen ? 
+        new Icon(IconData(0xe600, fontFamily: 'aliFont')) 
+        : 
+        new Icon(IconData(0xe69c, fontFamily: 'aliFont')),
+      iconSize: getWidth(40.0, winWidth),
       color: primaryColor,
       onPressed: toggleEye,
     ): new Container();
