@@ -174,6 +174,7 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
             ),
             new Flexible(
               child: new ListView.builder(
+//                  physics: const NeverScrollableScrollPhysics(),
                 controller: controller,
                 itemCount: news.length,
                 itemBuilder: (context, index) {
@@ -283,7 +284,7 @@ class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
                 ),
               ),
               child: new Image.network(
-                'https://sit-honyconnect.honycapital.com${widget.newsInfo.focusImgUrl}',
+                '$urlHost${widget.newsInfo.focusImgUrl}',
                 fit: BoxFit.cover,
               ),
             ),

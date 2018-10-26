@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.initState();
     _tc = new TabController(
         initialIndex: _activeIndex,
-        length: 4,
+        length: 3,
         vsync: this
     );
     onTabChanged = (){
@@ -61,13 +61,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     double winWidth = MediaQuery.of(context).size.width;
     return new GestureDetector(
       child: new Scaffold(
-        body: new TabBarView(
-          controller: _tc,
+        body: new IndexedStack(
+          index: _activeIndex,
           children: [
             new NewsIndexPage(),
 //            new APage(),
             new BPage(),
-            new CPage(),
+//            new CPage(),
             new MinePage(),
           ]
         ),
@@ -81,8 +81,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               tabs: <Widget>[
                 new CustomTabItem(_activeIndex == 0, IconData(0xe86e, fontFamily: 'aliFont'), "News"),
                 new CustomTabItem(_activeIndex == 1, IconData(0xe67d, fontFamily: 'aliFont'), "Invest"),
-                new CustomTabItem(_activeIndex == 2, IconData(0xe62c, fontFamily: 'aliFont'), "Asset"),
-                new CustomTabItem(_activeIndex == 3, IconData(0xe6b6, fontFamily: 'aliFont'), "Mine"),
+//                new CustomTabItem(_activeIndex == 2, IconData(0xe62c, fontFamily: 'aliFont'), "Asset"),
+                new CustomTabItem(_activeIndex == 2, IconData(0xe6b6, fontFamily: 'aliFont'), "Mine"),
               ]
             )
         ),

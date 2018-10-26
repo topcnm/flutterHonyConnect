@@ -10,10 +10,7 @@ import '../constant/colors.dart';
 import '../constant/sizes.dart';
 import '../constant/http.dart';
 import '../helper/pixelCompact.dart';
-import '../ui/combineIconInput.dart';
-import '../ui/extendButton.dart';
-import '../ui/pendingOverlay.dart';
-import '../ui/toast.dart';
+//import '../ui/toast.dart';
 
 class NewsDetail extends StatefulWidget {
   final String cntntId;
@@ -27,34 +24,44 @@ class NewsDetail extends StatefulWidget {
 }
 
 class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
+  String cntntId = '';
   String htmlStr = '';
   String cntntType ='';
   String cntntClassify = '';
   String topic = '';
   bool favorite = false;
-  bool isFavouring = false;
-  bool like = false;
-  bool isLiking = false;
+  bool isFavour = false;
+  bool likeCount = false;
+  bool isLike = false;
   bool shareFlg = false;
   List fileList = [];
+
+  bool isCommenting = false;
+  Map currentComment = {};
+  List comments = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     renderPageContent();
+    renderPageComment();
   }
 
   void renderPageContent() {
     getPageContent().then((res) {
       Map resJson = jsonDecode(res);
-      print(resJson is Map);
-      if (resJson['success']) {
+      if (resJson['success'] && resJson['result'] != null) {
         setState(() {
+          cntntId = resJson['result']['cntntId'];
           topic = resJson['result']['topic'];
           htmlStr = resJson['result']['content'];
+          isLike = resJson['result']['like'];
+          isFavour = resJson['result']['favorite'];
         });
       }
+    }).catchError((){
+      print('*******8 error');
     });
   }
 
@@ -76,11 +83,153 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
   }
 
   void renderPageComment() {
-
+    _getPageComment().then((res) {
+      Map resJson = jsonDecode(res);
+      print(resJson);
+      if (resJson['success'] && resJson['result'] != null) {
+        setState((){
+          comments = resJson['result']['content'];
+          print(comments);
+        });
+      }
+    });
   }
 
-  Future getPageComment() async {
+  Future _getPageComment() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    String refreshToken = prefs.getString('refreshToken');
 
+    http.Response response = await http.get(
+        Uri.encodeFull('$urlHost/cm/comment/findByCntnId?cntntId=${widget.cntntId}&pageNo=1&pageSize=999'),
+        headers: {
+          "Accept": "application/json, text/plain, */*",
+          "Authorization": 'bearer $accessToken',
+          "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
+        }
+    );
+
+    return response.body;
+  }
+
+  void handleCommentCommit(String reply) {
+    _handleCommentCommit(reply).then((res){
+      Map resJson = jsonDecode(res);
+      print(resJson);
+      if (resJson['success']) {
+        setState(() {
+          comments = [resJson['result']] + comments;
+        });
+        hideComment();
+      }
+    });
+  }
+
+  Future _handleCommentCommit(String reply) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    String refreshToken = prefs.getString('refreshToken');
+
+    Map postObj = {
+      "cntntId": cntntId,
+      "reply": reply
+    };
+
+    http.Response response = await http.post(
+      Uri.encodeFull('$urlHost/cm/comment/create'),
+      body: jsonEncode(postObj),
+      headers: {
+        "Accept": "application/json, application/x-www-form-urlencoded",
+        "Authorization": 'bearer $accessToken',
+        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
+        "content-type": 'application/json',
+      }
+    );
+
+    return response.body;
+  }
+
+  void handleContentLike() {
+    _handleContentLike().then((res) {
+      Map resJson = jsonDecode(res);
+      print(resJson);
+      if (resJson['success']) {
+        setState((){
+          isLike = !isLike;
+        });
+      }
+    });
+  }
+
+  Future _handleContentLike() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    String refreshToken = prefs.getString('refreshToken');
+
+    Map postObj = {
+      "cntntId": cntntId
+    };
+
+    http.Response response = await http.post(
+      Uri.encodeFull('$urlHost/cm/comment/${ isLike ? 'unLikeContent' : 'likeContent'}'),
+      body: jsonEncode(postObj),
+      headers: {
+        "Accept": "application/json, application/x-www-form-urlencoded",
+        "Authorization": 'bearer $accessToken',
+        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
+        "content-type": 'application/json',
+      }
+    );
+
+    return response.body;
+  }
+
+  void handleContentFav() {
+    _handleContentFav().then((res) {
+      Map resJson = jsonDecode(res);
+      if (resJson['success']) {
+        setState((){
+          isFavour = !isFavour;
+        });
+      }
+    });
+  }
+
+  Future _handleContentFav() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    String refreshToken = prefs.getString('refreshToken');
+
+    Map postObj = {
+      "refId": cntntId,
+      "type": 'CONTENT'
+    };
+
+    http.Response response = await http.post(
+        Uri.encodeFull('$urlHost/ucm/user/${ isFavour ? 'unFavorite' : 'createFavorite'}'),
+        body: jsonEncode(postObj),
+        headers: {
+          "Accept": "application/json, application/x-www-form-urlencoded",
+          "Authorization": 'bearer $accessToken',
+          "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
+          "content-type": 'application/json',
+        }
+    );
+
+    return response.body;
+  }
+
+  void showComment(Map commentItem) {
+    setState(() {
+      isCommenting = true;
+      currentComment = commentItem;
+    });
+  }
+
+  void hideComment() {
+    setState(() {
+      isCommenting = false;
+    });
   }
 
   @override
@@ -99,6 +248,7 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
         new Scaffold(
           appBar: new AppBar(
             title: new Text('资讯详情'),
+            centerTitle: true,
             actions: <Widget>[
               new IconButton(
                   icon: new Icon(IconData(0xe6ba, fontFamily: 'aliFont'), color: emptyColor,),
@@ -136,69 +286,30 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
                       alignment: Alignment.centerLeft,
                       padding: EdgeInsets.only(bottom: getWidth(10.0, winWidth)),
                     ),
-
                     new MarkdownBody(
                       data: markdown,
                     ),
                   ],
                 ),
               ),
-              new Container(
-                padding: EdgeInsets.symmetric(
-                    vertical: getWidth(20.0, winWidth),
-                    horizontal: getWidth(30.0, winWidth)
-                ),
-                decoration: new BoxDecoration(
-                    border: new Border(bottom: new BorderSide(color: splitColor))
-                ),
-                child: new Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new CircleAvatar(
-                      radius: getWidth(26.0, winWidth),
-                      backgroundImage: new AssetImage('lib/images/fakehony.jpg'),
-                    ),
-                    new Padding(padding: EdgeInsets.only(left: getWidth(20.0, winWidth))),
-                    new Expanded(
-                        child: new Column(
-                            children: <Widget>[
-                              new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
-                              new Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  new Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      new Text(
-                                        'Martinan ner finded',
-                                        style: new TextStyle(
-                                            fontSize: getWidth(18.0, winWidth)
-                                        ),
-                                      ),
-                                      new Text(
-                                        '4 hour before',
-                                        style: new TextStyle(
-                                            fontSize: getWidth(14.0, winWidth),
-                                            color: assistFontColor
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
-                              new Text(
-                                'As lone as uhdi bibfasdnbij dnwdasiofhaasdjk hih asda hhahih asdhi dasd',
-                                style: new TextStyle(
-                                    fontSize: getWidth(22.0, winWidth)
-                                ),
-                              )
-                            ]
-                        )
-                    )
-                  ],
-                ),
+              new ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true, // ！！滚动区域内嵌到滚动区域，需要此属性！
+                itemCount: comments.length,
+                itemBuilder: (context, int index) {
+                  Map comment = comments[index];
+                  CommentModel cm = new CommentModel(
+                    cmntId: comment['cmntId'],
+                    cntntId: comment['cntntId'],
+                    like: comment['like'],
+                    likeCount: comment['likeCount'],
+                    reply: comment['reply'],
+                    replyTime: comment['replyTime'],
+                    userheadImg: comment['userheadImg'],
+                    userName: comment['userName']
+                  );
+                  return new CommentItem(comment: cm,);
+                }
               )
             ],
           ),
@@ -208,28 +319,36 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 new NewsDetailBottomMenuItem(
-                  isActive: true,
+                  isActive: isLike,
                   text: "Like",
                   icon: IconData(0xe644, fontFamily: 'aliFont'),
-                  onTap: (){},
+                  onTap: handleContentLike,
                 ),
                 new NewsDetailBottomMenuItem(
                   isActive: false,
                   text: "Comments",
                   icon: IconData(0xe626, fontFamily: 'aliFont'),
-                  onTap: (){},
+                  onTap: (){
+                    showComment({});
+                  },
                 ),
                 new NewsDetailBottomMenuItem(
-                  isActive: true,
+                  isActive: isFavour,
                   text: "Favourites",
                   icon: IconData(0xe7ae, fontFamily: 'aliFont'),
-                  onTap: (){},
+                  onTap: handleContentFav,
                 ),
               ],
             ),
           )
         ),
-        new CommentDialog(),
+        isCommenting ?
+          new CommentDialog(
+            onTapCancel: hideComment,
+            onTapConfirm: handleCommentCommit,
+          )
+          :
+          new Container(),
       ]
     );
   }
@@ -266,30 +385,35 @@ class _NewsDetailBottomMenuItemState extends State<NewsDetailBottomMenuItem> wit
       flex: 1,
       child: new Container(
         height: getWidth(100.0, winWidth),
-        child:new MaterialButton(
-          onPressed: widget.onTap,
-          color: widget.isActive ? primaryColor : greyBgColor,
-          child:new Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              new Icon(
-                widget.icon,
-                size: getWidth(36.0, winWidth),
-                color: widget.isActive ? emptyColor: primaryColor,
-              ),
-              new Padding(
-                  padding: EdgeInsets.only(
-                      top: getWidth(8.0, winWidth)
-                  )
-              ),
-              new Text(
-                widget.text,
-                style: new TextStyle(
-                  fontSize: getWidth(20.0, winWidth),
-                  color: widget.isActive ? emptyColor: primaryColor
+        decoration: new BoxDecoration(
+          border: new Border(top: new BorderSide(color: splitColor)),
+        ),
+        child:new InkWell(
+          onTap: widget.onTap,
+          child: new Container(
+            color: widget.isActive ? primaryColor : greyBgColor,
+            child: new Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Icon(
+                  widget.icon,
+                  size: getWidth(36.0, winWidth),
+                  color: widget.isActive ? emptyColor: primaryColor,
                 ),
-              ),
-            ],
+                new Padding(
+                    padding: EdgeInsets.only(
+                        top: getWidth(8.0, winWidth)
+                    )
+                ),
+                new Text(
+                  widget.text,
+                  style: new TextStyle(
+                    fontSize: getWidth(20.0, winWidth),
+                    color: widget.isActive ? emptyColor: primaryColor
+                  ),
+                ),
+              ],
+            )
           )
         ),
       )
@@ -357,11 +481,12 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
         children: <Widget>[
           new CircleAvatar(
             radius: getWidth(26.0, winWidth),
-            backgroundImage: new AssetImage('lib/images/fakehony.jpg'),
+            backgroundImage: new NetworkImage('$urlHost/nd/image/${widget.comment.userheadImg}'),
           ),
           new Padding(padding: EdgeInsets.only(left: getWidth(20.0, winWidth))),
           new Expanded(
               child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
                     new Row(
@@ -371,7 +496,7 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             new Text(
-                              'Martinan ner finded',
+                              widget.comment.userName,
                               style: new TextStyle(
                                   fontSize: getWidth(18.0, winWidth)
                               ),
@@ -385,11 +510,24 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
                             ),
                           ],
                         ),
+                        new Row(
+                          children: <Widget>[
+                            new IconButton(
+                              icon: new Icon(
+                                new IconData(0xe644, fontFamily: 'aliFont'), 
+                                color: primaryColor,
+                              ),
+                              iconSize: getWidth(26.0, winWidth),
+                              onPressed: null
+                            ),
+                            new Text('${widget.comment.likeCount}')
+                          ],
+                        )
                       ],
                     ),
                     new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
                     new Text(
-                      'As lone as uhdi bibfasdnbij dnwdasiofhaasdjk hih asda hhahih asdhi dasd',
+                      widget.comment.reply,
                       style: new TextStyle(
                           fontSize: getWidth(22.0, winWidth)
                       ),
@@ -404,19 +542,51 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
 }
 
 class CommentDialog extends StatefulWidget {
+  final VoidCallback onTapCancel;
+  final Function onTapConfirm;
+
+  CommentDialog({
+    @required this.onTapCancel,
+    @required this.onTapConfirm,
+  });
+
   @override
   _CommentDialogState createState() => new _CommentDialogState();
 }
 
 class _CommentDialogState extends State<CommentDialog> with SingleTickerProviderStateMixin implements PixelCompactMixin{
+  TextEditingController textEditingController = new TextEditingController();
+  AnimationController controller;
+  Animation<double> animation;
+
+  String result = '';
+
+  void handleConfirm() {
+    widget.onTapConfirm(result);
+    setState(() {
+      textEditingController.text = '';
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    AnimationController controller = new AnimationController(
+        vsync: this,
+      duration: new Duration(milliseconds: 100)
+    );
+    animation = new CurvedAnimation(parent: controller, curve: Curves.decelerate);
+    animation.addListener((){setState(() {
+
+    });});
+    controller.forward();
   }
 
   @override
   void dispose() {
+    controller.dispose();
+    textEditingController.dispose();
     super.dispose();
   }
 
@@ -451,7 +621,7 @@ class _CommentDialogState extends State<CommentDialog> with SingleTickerProvider
                     width: double.infinity,
                     child: new Row(
                       children: <Widget>[
-                        new CommentDialogButton(text: 'Cancel', onTap: (){}),
+                        new CommentDialogButton(text: 'Cancel', onTap: widget.onTapCancel),
                         new Expanded(
                             child: new Container(
                               alignment: Alignment.center,
@@ -460,7 +630,7 @@ class _CommentDialogState extends State<CommentDialog> with SingleTickerProvider
                               ),
                             )
                         ),
-                        new CommentDialogButton(text: 'Send out', onTap: (){}),
+                        new CommentDialogButton(text: 'Send', onTap: handleConfirm),
                       ],
                     ),
                     decoration: new BoxDecoration(
@@ -468,7 +638,7 @@ class _CommentDialogState extends State<CommentDialog> with SingleTickerProvider
                     ),
                   ),
                   new Container(
-                    height: getWidth(490.0, winWidth),
+                    height: animation.value * getWidth(490.0, winWidth),
                     padding: EdgeInsets.symmetric(
                         vertical: getWidth(20.0, winWidth),
                       horizontal: getWidth(30.0, winWidth)
@@ -480,6 +650,13 @@ class _CommentDialogState extends State<CommentDialog> with SingleTickerProvider
                         hintText: 'Please type in',
                         border: InputBorder.none,
                       ),
+                      onChanged: (String str) {
+                        print(str);
+                        setState(() {
+                          result = str;
+                        });
+                      },
+                      controller: textEditingController,
                     ),
                   )
                 ],
