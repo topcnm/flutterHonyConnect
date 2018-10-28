@@ -476,64 +476,70 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
           border: new Border(bottom: new BorderSide(color: splitColor))
       ),
       child: new Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          new CircleAvatar(
-            radius: getWidth(26.0, winWidth),
-            backgroundImage: new NetworkImage('$urlHost/nd/image/${widget.comment.userheadImg}'),
+          new Padding(
+            padding: EdgeInsets.only(bottom: 20.0),
+            child: new CircleAvatar(
+              radius: getWidth(26.0, winWidth),
+              backgroundImage: new NetworkImage('$urlHost/nd/image/${widget.comment.userheadImg}'),
+            ),
           ),
           new Padding(padding: EdgeInsets.only(left: getWidth(20.0, winWidth))),
           new Expanded(
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
-                    new Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        new Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            new Text(
-                              widget.comment.userName,
-                              style: new TextStyle(
-                                  fontSize: getWidth(18.0, winWidth)
-                              ),
+            child: new Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      new Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          new Text(
+                            widget.comment.userName,
+                            style: new TextStyle(
+                              fontSize: getWidth(18.0, winWidth),
                             ),
-                            new Text(
-                              '4 hour before',
-                              style: new TextStyle(
-                                  fontSize: getWidth(14.0, winWidth),
-                                  color: assistFontColor
-                              ),
+                          ),
+
+                          new Text(
+                            '4 hour before',
+                            style: new TextStyle(
+                                fontSize: getWidth(14.0, winWidth),
+                                color: assistFontColor
                             ),
-                          ],
-                        ),
-                        new Row(
-                          children: <Widget>[
-                            new IconButton(
-                              icon: new Icon(
-                                new IconData(0xe644, fontFamily: 'aliFont'), 
-                                color: primaryColor,
-                              ),
-                              iconSize: getWidth(26.0, winWidth),
-                              onPressed: null
-                            ),
-                            new Text('${widget.comment.likeCount}')
-                          ],
-                        )
-                      ],
-                    ),
-                    new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
-                    new Text(
-                      widget.comment.reply,
-                      style: new TextStyle(
-                          fontSize: getWidth(22.0, winWidth)
+                          ),
+                        ],
                       ),
-                    )
-                  ]
-              )
+                      new Row(
+                        children: <Widget>[
+                          new IconButton(
+                            icon: new Icon(
+                              new IconData(0xe644, fontFamily: 'aliFont'),
+                              color: primaryColor,
+                            ),
+                            iconSize: getWidth(26.0, winWidth),
+                            onPressed: null
+                          ),
+                          new Text(
+                            '${widget.comment.likeCount}',
+                            style: new TextStyle(
+                              color: primaryColor
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                  new Text(
+                    widget.comment.reply,
+                    style: new TextStyle(
+                        fontSize: getWidth(22.0, winWidth)
+                    ),
+                  )
+                ]
+            )
           )
         ],
       ),

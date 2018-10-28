@@ -30,6 +30,7 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
   int totalPageMount = 1;
   int pageNo = 1;
   int pageSize = 10;
+  bool isLoading = false;
 
   // bug switch none-neighbor tab,  "setState() called after dispose()"
   // in this case, initState fired
@@ -54,8 +55,22 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
     super.dispose();
   }
 
+  Future<Null> handleRefreshAll() async {
+    setState(() {
+      pageNo = 1;
+      images = [];
+      news = [];
+      totalPageMount = 1;
+    });
+
+    renderCarousel();
+    renderPageAsPageNo(1);
+
+    return null;
+  }
+
   void scrollListener() {
-    if (controller.position.extentAfter < 10 && pageNo < totalPageMount) {
+    if (controller.position.extentAfter < 50 && (pageNo < totalPageMount) && !isLoading) {
       print('-----------------------i am trggered, pageNo is $pageNo');
       renderPageAsPageNo(pageNo + 1);
     }
@@ -69,11 +84,9 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
       }
       // why we have to check the mount status
       // cause views in tab is always rendered
-      if (this.mounted) {
-        setState(() {
-          images = responseObj['result'];
-        });
-      }
+      setState(() {
+        images = responseObj['result'];
+      });
     });
   }
 
@@ -95,16 +108,23 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
   }
 
   void renderPageAsPageNo(int _pageNo) {
+    setState(() {
+      isLoading = true;
+    });
+
     getNexPage(_pageNo).then((res) {
       Map resJson = jsonDecode(res.body);
-      if (this.mounted) {
-        this.setState(() {
-          totalPageMount = resJson['result']['totalPages'];
-          pageNo = _pageNo;
-          news = news + resJson['result']['content'];
-          print(news.length);
-        });
-      }
+      this.setState(() {
+        totalPageMount = resJson['result']['totalPages'];
+        pageNo = _pageNo;
+        news = news + resJson['result']['content'];
+        isLoading = false;
+        print(news.length);
+      });
+    }).whenComplete((){
+      setState(() {
+        isLoading = false;
+      });
     });
   }
 
@@ -122,6 +142,7 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
         }
     );
 
+
     return response;
   }
   
@@ -131,17 +152,57 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
     return winWidth * num / standardWidth;
   }
 
+  Widget rowBuilder(i) {
+    double winWidth = MediaQuery.of(context).size.width;
+    if (i == 0) {
+      List _images = images.map((item) {
+        return new PictureItem(
+            url: '$urlHost${item['focusImgUrl']}',
+            id: item['cntntId'],
+            title: item['topic']
+        );
+      }).toList();
+
+      return new Container(
+        width: double.infinity,
+        height: getWidth(300.0, winWidth),
+        child: new HonyCarousel(
+          dotSize: getWidth(8.0, winWidth),
+          dotSpacing: getWidth(25.0, winWidth),
+          boxFit: BoxFit.fill,
+          animationDuration: new Duration(milliseconds: 600),
+          animationCurve: Curves.easeOut,
+          onTapImage: (PictureItem item) {
+            print(item.id);
+          },
+          images: _images,
+        )
+      );
+    }
+
+    var item = news[i - 1];
+    NewsItem _item = new NewsItem(
+        cntntId: item['cntntId'],
+        topic: item['topic'],
+        focusImgUrl: item['focusImgUrl'],
+        rlsTime: item['rlsTime']
+    );
+    return new NewsComponent(
+      newsInfo: _item,
+      onTap: () {
+        print('----------------${item['cntntId']}');
+        Navigator.of(context).push(
+          new MaterialPageRoute(
+              builder: (BuildContext context) => new NewsDetail(cntntId: item['cntntId'])
+          )
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double winWidth = MediaQuery.of(context).size.width;
-    List _images = images.map((item) {
-      return new PictureItem(
-        url: '$urlHost${item['focusImgUrl']}',
-        id: item['cntntId'],
-        title: item['topic']
-      );
-    }).toList();
-
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('News'),
@@ -153,55 +214,16 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
           )
         ],
       ),
-      body: new GestureDetector(
-        child: new Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            new Container(
-              width: double.infinity,
-              height: getWidth(300.0, winWidth),
-              child: new HonyCarousel(
-                dotSize: getWidth(8.0, winWidth),
-                dotSpacing: getWidth(25.0, winWidth),
-                boxFit: BoxFit.fill,
-                animationDuration: new Duration(milliseconds: 600),
-                animationCurve: Curves.easeOut,
-                onTapImage: (PictureItem item) {
-                  print(item.id);
-                },
-                images: _images,
-              ),
-            ),
-            new Flexible(
-              child: new ListView.builder(
-//                  physics: const NeverScrollableScrollPhysics(),
-                controller: controller,
-                itemCount: news.length,
-                itemBuilder: (context, index) {
-                  var item = news[index];
-                  NewsItem _item = new NewsItem(
-                    cntntId: item['cntntId'],
-                    topic: item['topic'],
-                    focusImgUrl: item['focusImgUrl'],
-                    rlsTime: item['rlsTime']
-                  );
-                  return new NewsComponent(
-                    newsInfo: _item,
-                    onTap: () {
-                      print('----------------${item['cntntId']}');
-                      Navigator.of(context).push(
-                        new MaterialPageRoute(
-                            builder: (BuildContext context) => new NewsDetail(cntntId: item['cntntId'])
-                        )
-                      );
-                    },
-                  );
-                }
-              )
-            )
-          ],
+      body: new RefreshIndicator(
+        child:new ListView.builder(
+          controller: controller,
+          itemCount: news.length,
+          itemBuilder: (context, index) {
+            return rowBuilder(index);
+          }
         ),
-      ),
+        onRefresh: handleRefreshAll
+      )
     );
   }
 }
