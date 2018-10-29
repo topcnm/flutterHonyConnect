@@ -2,28 +2,51 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:html2md/html2md.dart' as html2md;
 import 'package:flutter_markdown/flutter_markdown.dart';
+
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 import '../constant/colors.dart';
 import '../constant/sizes.dart';
 import '../constant/http.dart';
 import '../helper/pixelCompact.dart';
-//import '../ui/toast.dart';
 
-class NewsDetail extends StatefulWidget {
+import '../model/appState.dart';
+import '../model/user.dart';
+
+//import '../ui/toast.dart';
+class NewsDetail extends StatelessWidget {
   final String cntntId;
 
   NewsDetail({
-    @required this.cntntId,
+    this.cntntId
   });
 
   @override
-  _NewsDetailState createState() => _NewsDetailState();
+  Widget build(BuildContext context) {
+    return new StoreConnector(
+      converter: (Store<AppState> store) => store.state.loginUser,
+      builder: (context, LoginUser user) {
+        return new NewsDetailWidget(cntntId, user);
+      },
+    );
+  }
 }
 
-class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
+
+class NewsDetailWidget extends StatefulWidget {
+  final String cntntId;
+  final LoginUser user;
+
+  NewsDetailWidget(this.cntntId, this.user);
+
+  @override
+_NewsDetailWidgetState createState() => _NewsDetailWidgetState();
+}
+
+class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCompactMixin{
   String cntntId = '';
   String htmlStr = '';
   String cntntType ='';
@@ -66,9 +89,8 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
   }
 
   Future getPageContent() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     http.Response response = await http.get(
       Uri.encodeFull('$urlHost/cm/news/findById?cntntId=${widget.cntntId}'),
@@ -96,9 +118,8 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
   }
 
   Future _getPageComment() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     http.Response response = await http.get(
         Uri.encodeFull('$urlHost/cm/comment/findByCntnId?cntntId=${widget.cntntId}&pageNo=1&pageSize=999'),
@@ -126,9 +147,8 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
   }
 
   Future _handleCommentCommit(String reply) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     Map postObj = {
       "cntntId": cntntId,
@@ -162,9 +182,8 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
   }
 
   Future _handleContentLike() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     Map postObj = {
       "cntntId": cntntId
@@ -196,9 +215,8 @@ class _NewsDetailState extends State<NewsDetail> implements PixelCompactMixin{
   }
 
   Future _handleContentFav() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     Map postObj = {
       "refId": cntntId,

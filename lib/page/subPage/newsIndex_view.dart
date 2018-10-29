@@ -2,27 +2,43 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 import '../../constant/colors.dart';
 import '../../constant/sizes.dart';
 import '../../constant/http.dart';
 import '../../helper/pixelCompact.dart';
-import '../../ui/combineIconInput.dart';
-import '../../ui/extendButton.dart';
-import '../../ui/pendingOverlay.dart';
-import '../../ui/toast.dart';
 import '../../ui/carousel.dart';
 
+import '../../model/appState.dart';
+import '../../model/user.dart';
 import '../../model/newsItem.dart';
 import '../newsDetail_view.dart';
 
-class NewsIndexPage extends StatefulWidget {
+class NewsIndexPage extends StatelessWidget {
   @override
-  _NewsIndexPageState createState() => _NewsIndexPageState();
+  Widget build(BuildContext context) {
+    return new StoreConnector(
+      converter: (Store<AppState> store) => store.state.loginUser,
+      builder: (context, LoginUser user) {
+        return new NewsIndexPageWidget(user);
+      },
+    );
+  }
 }
 
-class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMixin{
+
+class NewsIndexPageWidget extends StatefulWidget {
+  final LoginUser user;
+  NewsIndexPageWidget(this.user);
+
+  @override
+  _NewsIndexPageStateWidget createState() => _NewsIndexPageStateWidget();
+}
+
+class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements PixelCompactMixin{
   ScrollController controller;
 
   List images = [];
@@ -91,9 +107,8 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
   }
 
   Future getNewCarousel() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     http.Response response = await http.get(
       Uri.encodeFull('$urlHost/cm/news/findFocus?contentPlatform=CNTNTPLT_NEWS'),
@@ -129,9 +144,8 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
   }
 
   Future getNexPage(int pageNo) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
-    String refreshToken = prefs.getString('refreshToken');
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
     http.Response response = await http.get(
       Uri.encodeFull('$urlHost/cm/news/findByCurrentUser?contentPlatform=CNTNTPLT_NEWS&pageNo=$pageNo&pageSize=$pageSize'),
@@ -202,7 +216,6 @@ class _NewsIndexPageState extends State<NewsIndexPage> implements PixelCompactMi
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('News'),

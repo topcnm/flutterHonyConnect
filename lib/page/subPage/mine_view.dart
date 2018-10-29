@@ -1,51 +1,45 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 import '../../constant/colors.dart';
 import '../../constant/sizes.dart';
 import '../../constant/http.dart';
 import '../../helper/pixelCompact.dart';
-import '../../ui/combineIconInput.dart';
-import '../../ui/extendButton.dart';
-import '../../ui/pendingOverlay.dart';
-import '../../ui/toast.dart';
+
+import '../../model/appState.dart';
+import '../../model/user.dart';
 
 ///AutomaticKeepAliveClientMixin not work still bug
 /// _debugUltimatePreviousSiblingOf(after, equals: _firstChild) is not true. #11895
-class MinePage extends StatefulWidget {
+
+class MinePage extends StatelessWidget {
   @override
-  _MinePageState createState() => _MinePageState();
+  Widget build(BuildContext context) {
+    return new StoreConnector(
+      converter: (Store<AppState> store) => store.state.loginUser,
+      builder: (context, LoginUser user) {
+        return new MinePageWidget(user);
+      },
+    );
+  }
 }
 
-class _MinePageState extends State<MinePage> with PixelCompactMixin{
-  dynamic _avatar;
-  String _name = '';
-  String _role = '';
-  String _org = '';
+class MinePageWidget extends StatefulWidget {
+  final LoginUser user;
+  MinePageWidget(this.user);
+
+  @override
+  _MinePageWidgetState createState() => _MinePageWidgetState();
+}
+
+class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    getUserInfo().then((res) {
-      Map userInfo = jsonDecode(jsonDecode(res));
-      setState(() {
-        _avatar = userInfo['photoUrl'];
-        _name = userInfo['name'];
-        _role = userInfo['position'];
-        _org = 'Hony Investment';
-      });
-    });
-  }
-
-  Future<String> getUserInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String userInfo = prefs.getString('userInfo');
-    return userInfo;
+    print(widget.user);
   }
 
   @override
@@ -53,6 +47,7 @@ class _MinePageState extends State<MinePage> with PixelCompactMixin{
     // TODO: implement getWidth
     return winWidth * num / standardWidth;
   }
+
   @override
   Widget build(BuildContext context) {
     double winWidth = MediaQuery.of(context).size.width;
@@ -101,8 +96,8 @@ class _MinePageState extends State<MinePage> with PixelCompactMixin{
                     child: new CircleAvatar(
                         radius: getWidth(58.0, winWidth),
                         backgroundColor: primaryColor,
-                        backgroundImage: _avatar != null ?
-                          new NetworkImage('$urlHost/nd/image/$_avatar')
+                        backgroundImage: widget.user.photoUrl != null ?
+                          new NetworkImage('$urlHost/nd/image/${widget.user.photoUrl}')
                           :
                           new AssetImage('lib/images/fakehony.jpg')
                     ),
@@ -112,13 +107,13 @@ class _MinePageState extends State<MinePage> with PixelCompactMixin{
                   new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      new Text(_role, style: myStyle,),
+                      new Text(widget.user.position, style: myStyle,),
                       new Divider(indent: getWidth(20.0, winWidth), color: emptyColor,),
-                      new Text(_org, style: myStyle,)
+                      new Text(widget.user.mobile, style: myStyle,)
                     ],
                   ),
                   new Padding(padding: EdgeInsets.only(top: getWidth(20.0, winWidth))),
-                  new Text(_name, style: new TextStyle(
+                  new Text(widget.user.name, style: new TextStyle(
                     fontSize: getWidth(30.0, winWidth),
                     fontWeight: FontWeight.bold,
                     color: emptyColor

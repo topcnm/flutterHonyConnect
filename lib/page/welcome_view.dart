@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../constant/colors.dart';
 import '../constant/sizes.dart';
 import '../helper/pixelCompact.dart';
-import './login_view.dart';
+import './login/login_view.dart';
 
 class Welcome extends StatefulWidget {
   @override
@@ -13,14 +13,13 @@ class Welcome extends StatefulWidget {
 }
 
 class _WelcomeState extends State<Welcome> with PixelCompactMixin{
-  Timer _t;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    _t = new Timer(new Duration(milliseconds: 2000), () {
+//    return null;
+    new Timer(new Duration(milliseconds: 2000), () {
       try{
         Navigator.of(context).pushAndRemoveUntil(
             new MaterialPageRoute(builder: (BuildContext context) => new LoginPage()),

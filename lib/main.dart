@@ -1,38 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // 防止显示切换方向
+
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
+import 'package:redux_thunk/redux_thunk.dart';
+import './model/appState.dart';
+import './reducer/appReducer.dart';
+
 import './constant/colors.dart';
 
 import './page/welcome_view.dart';
 import './page/home_view.dart';
+import './page/login/login_view.dart';
 
 void main() {
   // prevent screen rotation
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(new MyApp());
+    runApp(new MyReduxApp());
   });
 }
 
-class MyApp extends StatelessWidget {
+class MyReduxApp extends StatelessWidget {
+  final store = Store<AppState>(
+      appReducer,
+    initialState: AppState.empty,
+    middleware: [thunkMiddleware]
+  );
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Flutter Demo',
-      theme: new ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or press Run > Flutter Hot Reload in IntelliJ). Notice that the
-        // counter didn't reset back to zero; the application is not restarted.
-        primaryColor: primaryColor,
-      ),
-      home: new Welcome(),
-      routes: <String, WidgetBuilder> {
-        '/home': (BuildContext context) => new HomePage()
-      },
+    return new StoreProvider(
+      store: store,
+      child: new MaterialApp(
+        title: 'Flutter Demo',
+        theme: new ThemeData(
+          primaryColor: primaryColor,
+        ),
+        home: new Welcome(),
+        routes: <String, WidgetBuilder> {
+//          '/': (BuildContext context) => new Welcome(),
+          '/main': (BuildContext context) => new HomePage(),
+          '/login': (BuildContext context) => new LoginPage(),
+        },
+      )
     );
   }
 }

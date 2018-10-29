@@ -1,16 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constant/colors.dart';
 import '../constant/sizes.dart';
 import '../helper/pixelCompact.dart';
-import '../ui/combineIconInput.dart';
-import '../ui/extendButton.dart';
-import '../ui/pendingOverlay.dart';
-import '../ui/toast.dart';
 
 import './subPage/mine_view.dart';
 import './subPage/newsIndex_view.dart';
@@ -58,7 +50,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new GestureDetector(
       child: new Scaffold(
         body: new IndexedStack(

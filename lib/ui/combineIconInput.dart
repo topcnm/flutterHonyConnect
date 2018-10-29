@@ -11,8 +11,8 @@ class CombineIconInput extends StatefulWidget {
   final bool hasEye;
 
   CombineIconInput(
-      @required this._icon,
-      @required this._onChange,
+      this._icon,
+      this._onChange,
       {
         Key key,
         this.hasEye = false,
