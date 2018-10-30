@@ -60,7 +60,7 @@ class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompact
     showModalBottomSheet<void>(context: context, builder: (BuildContext ctx) {
       double winWidth = MediaQuery.of(context).size.width;
       return new Container(
-        height: getWidth(220.0, winWidth),
+        height: getWidth(300.0, winWidth),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
