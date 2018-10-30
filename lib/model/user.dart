@@ -1,3 +1,9 @@
+
+enum Language {
+  en,
+  zh
+}
+
 class LoginUser {
   //
   bool isLoading;
@@ -16,7 +22,7 @@ class LoginUser {
   String accountId;
 
   //relative info
-  String locale;
+  Language locale;
   String mobile;
   String mail;
   String photoUrl;
@@ -39,7 +45,7 @@ class LoginUser {
     this.accountId = '',
 
     //relative info
-    this.locale = '',
+    this.locale = Language.en,
     this.mobile = '',
     this.mail = '',
     this.photoUrl = '',

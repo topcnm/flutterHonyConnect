@@ -146,7 +146,6 @@ class APage extends StatelessWidget {
 class BPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    print('render B page');
     return Scaffold(
       appBar: new AppBar(
         title: new Text('B page'),

@@ -227,16 +227,20 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
           )
         ],
       ),
-      body: new RefreshIndicator(
-        child:new ListView.builder(
-          controller: controller,
-          itemCount: news.length,
-          itemBuilder: (context, index) {
-            return rowBuilder(index);
-          }
-        ),
-        onRefresh: handleRefreshAll
-      )
+      body: news.length == 0 ? new Center(
+          child: new CircularProgressIndicator(),
+        )
+        :
+        new RefreshIndicator(
+          child:new ListView.builder(
+            controller: controller,
+            itemCount: news.length,
+            itemBuilder: (context, index) {
+              return rowBuilder(index);
+            }
+          ),
+          onRefresh: handleRefreshAll
+        )
     );
   }
 }

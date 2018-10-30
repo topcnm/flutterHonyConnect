@@ -59,11 +59,16 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
       appBar: new AppBar(
         title: new Text('Mine Page'),
         centerTitle: true,
-        leading: new Icon(Icons.settings),
+        leading: new IconButton(
+          icon: new Icon(Icons.settings),
+          color: emptyColor,
+          onPressed: () {
+            Navigator.of(context).pushNamed('/setting');
+          }
+        ),
         actions: <Widget>[
           new IconButton(
-              icon: new Icon(Icons.message),
-              color: emptyColor,
+              icon: new Icon(Icons.message, color: emptyColor,),
               onPressed: null
           )
         ],
@@ -131,7 +136,9 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
                   new Divider(color: splitColor,),
                   new MineMenuItem(Icons.favorite, 'My Favorites', (){}),
                   new Divider(color: splitColor,),
-                  new MineMenuItem(Icons.people, 'My Personal Information', (){}),
+                  new MineMenuItem(Icons.people, 'My Personal Information', (){
+                    Navigator.of(context).pushNamed("/personal");
+                  }),
                   new Divider(color: splitColor,),
                   new MineMenuItem(Icons.cloud_download, 'My Download', (){}),
                   new Divider(color: splitColor,),

@@ -1,6 +1,10 @@
 import 'package:redux/redux.dart';
-import './login_action.dart';
+
 import '../../model/user.dart';
+
+import './login_action.dart';
+import '../setting/logout_action.dart';
+import '../personal/personal_action.dart';
 
 final userStateReducer = combineReducers<LoginUser>([
   TypedReducer<LoginUser, UserStartLoginAction>(_startLogin),
@@ -8,6 +12,9 @@ final userStateReducer = combineReducers<LoginUser>([
   TypedReducer<LoginUser, UserAuthSuccessAction>(_successAuth),
   TypedReducer<LoginUser, UserLoginSuccessAction>(_successLogin),
   TypedReducer<LoginUser, UserLoginFailAction>(_failLogin),
+  TypedReducer<LoginUser, UserLogoutAction>(_successLogout),
+  TypedReducer<LoginUser, UserChangePhotoUrlAction>(_successChangePhotoUrl),
+  TypedReducer<LoginUser, UserSwitchLanguage>(_successSwitchLanguage),
 ]);
 
 LoginUser _startLogin(LoginUser user, UserStartLoginAction action) {
@@ -38,6 +45,24 @@ LoginUser _successLogin(LoginUser user, UserLoginSuccessAction action) {
 LoginUser _failLogin(LoginUser user, UserLoginFailAction action) {
   LoginUser _newUser = user.copyMe();
   _newUser.errorMsg = action.errorMsg;
+
+  return _newUser;
+}
+
+LoginUser _successLogout(LoginUser user, UserLogoutAction action) {
+  return new LoginUser();
+}
+
+LoginUser _successChangePhotoUrl(LoginUser user, UserChangePhotoUrlAction action) {
+  LoginUser _newUser = user.copyMe();
+  _newUser.photoUrl = action.newPhotoUrl;
+
+  return _newUser;
+}
+
+LoginUser _successSwitchLanguage(LoginUser user, UserSwitchLanguage action) {
+  LoginUser _newUser = user.copyMe();
+  _newUser.locale = action.lg;
 
   return _newUser;
 }

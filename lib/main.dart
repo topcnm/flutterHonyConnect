@@ -12,6 +12,8 @@ import './constant/colors.dart';
 import './page/welcome_view.dart';
 import './page/home_view.dart';
 import './page/login/login_view.dart';
+import './page/setting/setting_view.dart';
+import './page/personal/personal_view.dart';
 
 void main() {
   // prevent screen rotation
@@ -42,6 +44,8 @@ class MyReduxApp extends StatelessWidget {
 //          '/': (BuildContext context) => new Welcome(),
           '/main': (BuildContext context) => new HomePage(),
           '/login': (BuildContext context) => new LoginPage(),
+          '/setting': (BuildContext context) => new SettingPage(),
+          '/personal': (BuildContext context) => new PersonalPage(),
         },
       )
     );

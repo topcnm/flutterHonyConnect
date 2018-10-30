@@ -42,7 +42,7 @@ final Function userLoginActionCreator = ({String username, String password, Func
     Map<String, dynamic> authResData = jsonDecode(authInfo.body);
 
     // 4. 授权失败
-    if (authResData['error'] !=null) {
+    if (authResData['error'] != null) {
       store.dispatch(UserFinishLoginAction());
       store.dispatch(UserLoginFailAction(authResData['error_description']));
       return callback(false);
@@ -77,7 +77,7 @@ final Function userLoginActionCreator = ({String username, String password, Func
       account: userResData['result']['account'],
       accountId: userResData['result']['accountId'],
 
-      locale: userResData['result']['locale'],
+      locale: userResData['result']['locale'] == "en" ? Language.en : Language.zh,
       mobile: userResData['result']['mobile'],
 
       mail: userResData['result']['mail'],

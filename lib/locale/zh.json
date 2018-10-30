@@ -1,0 +1,13 @@
+{
+  "loginButtonText": "登录",
+  "newsIndexTitle": "资讯",
+  "newsDetailTitle": "资讯详情",
+  "mineTitle": "我的",
+
+  "settingTitle": "设置",
+  "settingVersion": "版本",
+  "settingLanguage": "语言设置",
+  "settingLogout": "登出",
+  "settingChinese": "中文",
+  "settingEnglish": "英语"
+}
