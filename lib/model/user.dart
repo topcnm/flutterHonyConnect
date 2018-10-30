@@ -4,6 +4,7 @@ enum Language {
   zh
 }
 
+/// 这个对象，可以认为是子state
 class LoginUser {
   //
   bool isLoading;

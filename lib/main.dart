@@ -23,6 +23,7 @@ void main() {
 }
 
 class MyReduxApp extends StatelessWidget {
+  /// 之后的所有组件中，都被注入类store, 可以通过StoreConnector 取到store的状态
   final store = Store<AppState>(
       appReducer,
     initialState: AppState.empty,

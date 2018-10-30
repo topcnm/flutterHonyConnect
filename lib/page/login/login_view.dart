@@ -17,7 +17,8 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return new StoreConnector(
-      converter: (Store<AppState> store) { // KEY 此处必须注明 Store<AppState> ，不然出现No StoreProvider<dynamic> found
+      /// KEY 此处必须注明 Store<AppState> ，不然出现No StoreProvider<dynamic> found
+      converter: (Store<AppState> store) {
         return {
           "onClickLogin": (String username, String password, Function callback) {
             return store.dispatch(
