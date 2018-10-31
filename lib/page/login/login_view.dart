@@ -12,6 +12,8 @@ import '../../ui/toast.dart';
 import '../../model/appState.dart';
 import './login_action.dart';
 
+import '../home_view.dart';
+
 class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -74,7 +76,10 @@ class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixi
         return showConnectToast(widget.stateObj['userState'].errorMsg);
       }
 
-      Navigator.of(context).pushNamed('/main');
+//      Navigator.of(context).pushNamed('/main');
+      Navigator.of(context).pushAndRemoveUntil(
+          new MaterialPageRoute(builder: (BuildContext context) => new HomePage()),
+              (Route route) => route == null);
     });
   }
 
