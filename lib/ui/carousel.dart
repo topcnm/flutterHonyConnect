@@ -121,6 +121,12 @@ class _HonyCarouselState extends State<HonyCarousel> {
               controller: _controller,
               children: listImages,
             ),
+            decoration: new BoxDecoration(
+              image: new DecorationImage(
+                image: new AssetImage('lib/images/hony-placeholder.jpg'),
+                fit: BoxFit.cover
+              ),
+            ),
           ),
           new Positioned(
             bottom: 0.0,
