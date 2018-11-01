@@ -15,6 +15,8 @@ import './page/login/login_view.dart';
 import './page/setting/setting_view.dart';
 import './page/personal/personal_view.dart';
 
+//import './storeinstance.dart';
+
 void main() {
   // prevent screen rotation
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
