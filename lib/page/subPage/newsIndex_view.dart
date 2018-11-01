@@ -16,6 +16,7 @@ import '../../model/appState.dart';
 import '../../model/user.dart';
 import '../../model/newsItem.dart';
 import '../newsDetail_view.dart';
+import '../webLink_view.dart';
 
 class NewsIndexPage extends StatelessWidget {
   @override
@@ -188,6 +189,11 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
           animationCurve: Curves.easeOut,
           onTapImage: (PictureItem item) {
             print(item.id);
+            Navigator.of(context).push(
+              new MaterialPageRoute(
+                builder: (BuildContext context) => new NewsDetail(cntntId: item.id)
+              )
+            );
           },
           images: _images,
         )
@@ -196,18 +202,28 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
 
     var item = news[i - 1];
     NewsItem _item = new NewsItem(
+        cntntFlg: item['cntntFlg'],
+        webLink: item['webLink'] != null ? item['webLink']: "https://www.baidu.com",
         cntntId: item['cntntId'],
         topic: item['topic'],
         focusImgUrl: item['focusImgUrl'],
-        rlsTime: item['rlsTime']
+        rlsTime: item['rlsTime'] != null ? item['rlsTime'].split("T")[0] : ""
     );
     return new NewsComponent(
       newsInfo: _item,
       onTap: () {
-        print('----------------${item['cntntId']}');
+        if (_item.cntntFlg) {
+          Navigator.of(context).push(
+              new MaterialPageRoute(
+                  builder: (BuildContext context) => new WebLinkPage(_item.webLink)
+              )
+          );
+          return null;
+        }
+
         Navigator.of(context).push(
           new MaterialPageRoute(
-              builder: (BuildContext context) => new NewsDetail(cntntId: item['cntntId'])
+              builder: (BuildContext context) => new NewsDetail(cntntId: _item.cntntId)
           )
         );
       },

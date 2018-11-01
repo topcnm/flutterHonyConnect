@@ -174,25 +174,50 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
       }).toList();
 
       return new Container(
-          width: double.infinity,
-          height: getWidth(300.0, winWidth),
-          child: new HonyCarousel(
-            dotSize: getWidth(8.0, winWidth),
-            dotSpacing: getWidth(25.0, winWidth),
-            boxFit: BoxFit.fill,
-            animationDuration: new Duration(milliseconds: 600),
-            animationCurve: Curves.easeOut,
-            onTapImage: (PictureItem item) {
-              print(item.id);
-            },
-            images: _images,
-          )
+        width: double.infinity,
+        height: getWidth(300.0, winWidth),
+        child: new HonyCarousel(
+          dotSize: getWidth(8.0, winWidth),
+          dotSpacing: getWidth(25.0, winWidth),
+          boxFit: BoxFit.fill,
+          animationDuration: new Duration(milliseconds: 600),
+          animationCurve: Curves.easeOut,
+          onTapImage: (PictureItem item) {
+            print(item.id);
+          },
+          images: _images,
+        )
       );
     }
     // 渲染成自定义tab
     if (i == 1) {
-
+      return new InvestTabComponent();
     }
+
+    var item = products[i - 2];
+
+    var _productType;
+
+    if (item['productType'] == "PRODTP_RE") {
+      _productType = ProductType.PRODTP_RE;
+    } else if (item['productType'] == "PRODTP_PE") {
+      _productType = ProductType.PRODTP_PE;
+    } else if (item['productType'] == "PRODTP_HF") {
+      _productType = ProductType.PRODTP_HF;
+    } else {
+      _productType = ProductType.PRODTP_PI;
+    }
+
+    ProductItem _product = new ProductItem(
+      cntntId: item['cntntId'],
+      productId: item['productId'],
+      topic: item['topic'],
+      productType: _productType,
+      rlsTime: item['rlsTime'] == null ? "" : item['rlsTime'],
+      keyWord: item['keyWord'],
+    );
+
+    return new ProductComponent(_product);
   }
 
   @override
@@ -203,16 +228,196 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Investment"),
+        centerTitle: true,
+      ),
+      body: products.length == 0 ? new Center(
+          child: new CircularProgressIndicator(),
+        )
+        :
+        new RefreshIndicator(
+          child: new ListView.builder(
+            controller: controller,
+            itemCount: products.length + 2,
+            itemBuilder: (BuildContext context, int index) {
+              return rowRender(index);
+            }
+          ),
+          onRefresh: handleRefreshAll
+        ),
+    );
   }
 }
 
-class ProductComponent extends StatelessWidget {
 
+class InvestTabComponent extends StatelessWidget implements PixelCompactMixin{
 
+  @override
+  double getWidth(double num, double winWidth) {
+    // TODO: implement getWidth
+    return winWidth * num / standardWidth;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    double winWidth = MediaQuery.of(context).size.width;
+    return new Container(
+      color: greyBgColor,
+      height: getWidth(150.0, winWidth),
+      child: new Row(
+        children: <Widget>[
+          new InvestTabBar(
+            "PE Fund",
+            IconData(0xe623, fontFamily: 'aliFont'),
+            () {}
+          ),
+          new InvestTabBar(
+            "Real Estate",
+            IconData(0xe64c, fontFamily: 'aliFont'),
+            () {}
+          ),
+          new InvestTabBar(
+            "Hedge Fund",
+            IconData(0xe614, fontFamily: 'aliFont'),
+            () {}
+          ),
+          new InvestTabBar(
+            "Joint Investment",
+            IconData(0xe67e, fontFamily: 'aliFont'),
+            () {}
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class InvestTabBar extends StatelessWidget implements PixelCompactMixin{
+  final Function onTap;
+  final String text;
+  final IconData icon;
+
+  InvestTabBar(this.text, this.icon, this.onTap);
+
+  @override
+  double getWidth(double num, double winWidth) {
+    // TODO: implement getWidth
+    return winWidth * num / standardWidth;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double winWidth = MediaQuery.of(context).size.width;
+    return new Expanded(
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new CircleAvatar(
+              radius: getWidth(45.0, winWidth),
+              backgroundColor: primaryColor,
+              child: new IconButton(
+                  icon: new Icon(icon, color: Colors.white,),
+                  onPressed: onTap
+              ),
+            ),
+            new Padding(
+              padding: EdgeInsets.only(top: getWidth(10.0, winWidth)),
+              child: new Text(text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: new TextStyle(
+                  fontSize: getWidth(20.0, winWidth)
+                ),
+              ),
+            ),
+          ],
+        )
+    );
+  }
+}
+
+
+
+class ProductComponent extends StatelessWidget implements PixelCompactMixin{
+  final ProductItem product;
+
+  ProductComponent(this.product);
+
+  @override
+  double getWidth(double num, double winWidth) {
+    // TODO: implement getWidth
+    return winWidth * num / standardWidth;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double winWidth = MediaQuery.of(context).size.width;
+    TextStyle _assFontStyle = new TextStyle(
+      fontSize: getWidth(16.0, winWidth),
+      color: assistFontColor
+    );
+
+    IconData _iconData = IconData(0xe623, fontFamily: 'aliFont');
+
+    if (product.productType == ProductType.PRODTP_HF) {
+      _iconData = IconData(0xe614, fontFamily: 'aliFont');
+    } else if (product.productType == ProductType.PRODTP_RE) {
+      _iconData = IconData(0xe64c, fontFamily: 'aliFont');
+    } else if (product.productType == ProductType.PRODTP_PI) {
+      _iconData = IconData(0xe67e, fontFamily: 'aliFont');
+    }
+
+    return new Container(
+      decoration: new BoxDecoration(
+        border: new Border(bottom: new BorderSide(color: splitColor))
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(30.0, winWidth),
+        vertical: getWidth(20.0, winWidth)
+      ),
+      child: new Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          new Container(
+            height: getWidth(80.0, winWidth),
+            width: getWidth(80.0, winWidth),
+            color: Color(0xFFed9e00),
+            child: new Icon(_iconData, color: emptyColor, size: getWidth(40.0, winWidth),),
+          ),
+          new Padding(padding: EdgeInsets.only(left: getWidth(40.0, winWidth))),
+          new Expanded(
+            child: new Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                new Container(
+                  child: new Text(product.topic,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: new TextStyle(
+                      fontSize: getWidth(22.0, winWidth),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      height: 0.85,
+                    ),
+                  ),
+                  width: double.infinity,
+                  height: getWidth(56.0, winWidth),
+                ),
+                new Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    new Text(product.keyWord, style: _assFontStyle,),
+                    new Text(product.rlsTime.split("T")[0], style: _assFontStyle,),
+                  ],
+                )
+              ],
+            )
+          )
+        ],
+      ),
+    );
   }
 }

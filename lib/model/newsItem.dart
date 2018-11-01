@@ -6,12 +6,16 @@ class NewsItem {
   final String focusImgUrl;
   final String rlsTime;
   final String cntntType;
+  final bool cntntFlg;
+  final String webLink;
 
   NewsItem({
     @required this.cntntId,
     @required this.topic,
     @required this.focusImgUrl,
     @required this.rlsTime,
-    this.cntntType
+    this.cntntType,
+    this.cntntFlg = false,
+    this.webLink = '',
   });
 }

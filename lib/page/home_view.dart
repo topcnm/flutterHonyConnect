@@ -6,6 +6,7 @@ import '../helper/pixelCompact.dart';
 
 import './subPage/mine_view.dart';
 import './subPage/newsIndex_view.dart';
+import './subPage/investIndex_view.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -56,9 +57,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           index: _activeIndex,
           children: [
             new NewsIndexPage(),
-//            new APage(),
-            new BPage(),
-//            new CPage(),
+            new InvestIndexPage(),
             new MinePage(),
           ]
         ),

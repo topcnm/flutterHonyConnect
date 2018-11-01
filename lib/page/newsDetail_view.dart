@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:html2md/html2md.dart' as html2md;
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:html/dom.dart' as dom;
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -78,7 +78,7 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
         setState(() {
           cntntId = resJson['result']['cntntId'];
           topic = resJson['result']['topic'];
-          htmlStr = resJson['result']['content'];
+          htmlStr = resJson['result']['content'] == null ? "" : resJson['result']['content'];
           isLike = resJson['result']['like'];
           isFavour = resJson['result']['favorite'];
         });
@@ -107,11 +107,9 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
   void renderPageComment() {
     _getPageComment().then((res) {
       Map resJson = jsonDecode(res);
-      print(resJson);
       if (resJson['success'] && resJson['result'] != null) {
         setState((){
           comments = resJson['result']['content'];
-          print(comments);
         });
       }
     });
@@ -136,7 +134,6 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
   void handleCommentCommit(String reply) {
     _handleCommentCommit(reply).then((res){
       Map resJson = jsonDecode(res);
-      print(resJson);
       if (resJson['success']) {
         setState(() {
           comments = [resJson['result']] + comments;
@@ -172,7 +169,6 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
   void handleContentLike() {
     _handleContentLike().then((res) {
       Map resJson = jsonDecode(res);
-      print(resJson);
       if (resJson['success']) {
         setState((){
           isLike = !isLike;
@@ -259,7 +255,6 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
   @override
   Widget build(BuildContext context) {
     double winWidth = MediaQuery.of(context).size.width;
-    String markdown = html2md.convert(htmlStr);
     return new Stack(
       fit: StackFit.expand,
       children: [
@@ -304,9 +299,19 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
                       alignment: Alignment.centerLeft,
                       padding: EdgeInsets.only(bottom: getWidth(10.0, winWidth)),
                     ),
-                    new MarkdownBody(
-                      data: markdown,
-                    ),
+                    new Container(
+                      child: new Html(
+                        data: htmlStr,
+                        customRender: (node, children) {
+                          if (node is dom.Element && node.localName == "img" && node.attributes['src'] != null) {
+                            String oldStr = node.attributes['src'];
+                            if (oldStr.startsWith("/")) {
+                              node.attributes['src'] = urlHost + oldStr;
+                            }
+                          }
+                        }
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -675,7 +680,6 @@ class _CommentDialogState extends State<CommentDialog> with SingleTickerProvider
                         border: InputBorder.none,
                       ),
                       onChanged: (String str) {
-                        print(str);
                         setState(() {
                           result = str;
                         });
