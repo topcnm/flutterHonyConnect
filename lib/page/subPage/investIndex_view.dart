@@ -17,6 +17,8 @@ import '../../model/appState.dart';
 import '../../model/user.dart';
 import '../../model/productItem.dart';
 
+import '../../helper/HttpUtils.dart';
+
 class InvestIndexPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -55,9 +57,7 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
     controller = new ScrollController();
     controller.addListener(scrollListener);
 
-    getCarouselImages();
-
-    getProductsAsPageNo(1);
+    handleRefreshAll();
   }
 
   @override
@@ -75,74 +75,58 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
     }
   }
 
-  void getCarouselImages() async {
-    http.Response imgResponse = await fetchCarouselImages();
-    Map<String, dynamic> imgData = jsonDecode(imgResponse.body);
-    if (imgData['success'] == null || imgData['success'] == false) {
-      showConnectToast("请求错误");
-      return null;
-    }
+  void getCarouselImages() {
+    String accessToken = widget.user.accessToken;
+    String refreshToken = widget.user.refreshToken;
 
-    setState(() {
-      images = imgData['result'];
+    HonyHttp.get(
+        "/cm/product/getFocus",
+        params: { "contentPlatform": "CNTNTPLT_NEWS"},
+        accessToken: accessToken,
+        refreshToken: refreshToken
+    ).then((res) {
+      Map<String, dynamic> imgData = jsonDecode(res);
+      if (imgData['success'] == null || imgData['success'] == false) {
+        showConnectToast("请求错误");
+        return null;
+      }
+      setState(() {
+        images = imgData['result'];
+      });
+    }).catchError((Object error) {
+      print('/cm/product/findFocus');
     });
   }
 
   void getProductsAsPageNo(int _pageNo) async {
-    setState(() {
-      isLoading = true;
-    });
-
-    http.Response nextPageResponse = await fetchNextPage(_pageNo);
-    Map<String, dynamic> npData = jsonDecode(nextPageResponse.body);
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (npData['success'] == null || npData['success'] == false) {
-      showConnectToast("拉取列表请求错误");
-      return null;
-    }
-
-    setState(() {
-      totalPageMount = npData['result']['totalPages'];
-      pageNo = _pageNo;
-      products = products + npData['result']['content'];
-      isLoading = false;
-    });
-  }
-
-  Future<http.Response> fetchCarouselImages() async {
     String accessToken = widget.user.accessToken;
     String refreshToken = widget.user.refreshToken;
 
-    http.Response imageRes = await http.get(
-      Uri.encodeFull('$urlHost/cm/product/getFocus'),
-      headers: {
-        "Accept": "application/json, text/plain, */*",
-        "Authorization": 'bearer $accessToken',
-        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
+    HonyHttp.get(
+        '/cm/product/findByCurrentUser',
+        params: { "pageNo": _pageNo, "pageSize": pageSize },
+        accessToken: accessToken,
+        refreshToken: refreshToken
+    ).then((res) {
+      Map responseObj = jsonDecode(res);
+      if (responseObj['success'] == false) {
+        throw({ "msg": "获取翻页数据失败" });
       }
-    );
-
-    return imageRes;
-  }
-
-  Future<http.Response> fetchNextPage(int _pageNo) async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    http.Response productRes = await http.get(
-        Uri.encodeFull('$urlHost/cm/product/findByCurrentUser?pageNo=$_pageNo&pageSize=$pageSize'),
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Authorization": 'bearer $accessToken',
-          "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-        }
-    );
-
-    return productRes;
+      this.setState(() {
+        isLoading = false;
+        products = products + responseObj['result']['content'];
+        totalPageMount = responseObj['result']['totalPages'];
+        pageNo = _pageNo;
+      });
+    }).catchError((Object error)  {
+      print('/cm/product/findByCurrentUser');
+      print(error);
+//      showConnectToast(error.msg);
+    }).whenComplete(() {
+      this.setState(() {
+        isLoading = false;
+      });
+    });
   }
 
   /// 组件要求必须是future
@@ -233,7 +217,7 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
         title: new Text("Investment"),
         centerTitle: true,
       ),
-      body: products.length == 0 ? new Center(
+      body: products.length == 0 && isLoading ? new Center(
           child: new CircularProgressIndicator(),
         )
         :

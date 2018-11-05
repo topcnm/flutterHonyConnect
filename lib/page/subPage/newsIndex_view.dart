@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -17,6 +16,8 @@ import '../../model/user.dart';
 import '../../model/newsItem.dart';
 import '../newsDetail_view.dart';
 import '../webLink_view.dart';
+
+import '../../helper/HttpUtils.dart';
 
 class NewsIndexPage extends StatelessWidget {
   @override
@@ -57,11 +58,7 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
     super.initState();
     controller = new ScrollController()..addListener(scrollListener);
 
-    // get initial carousel
-    renderCarousel();
-
-    // get initial list
-    renderPageAsPageNo(1);
+    handleRefreshAll();
   }
 
   @override
@@ -77,12 +74,11 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
       pageNo = 1;
       images = [];
       news = [];
+      isLoading = true;
       totalPageMount = 1;
     });
-
     renderCarousel();
     renderPageAsPageNo(1);
-
     return null;
   }
 
@@ -94,73 +90,55 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
   }
 
   void renderCarousel() {
-    getNewCarousel().then((res) {
-      Map<String, dynamic> responseObj = jsonDecode(res.body);
+    Map<String, String> queryParams = {
+      "contentPlatform": "CNTNTPLT_NEWS"
+    };
+
+    String carouselApi = "/cm/news/findFocus";
+
+    HonyHttp.get(carouselApi, params: queryParams, user: widget.user).then((res) {
+      Map<String, dynamic> responseObj = jsonDecode(res);
       if (responseObj['success'] == false) {
-        throw('请求错误');
+        throw({ "msg": "获取焦点图失败" });
       }
-      // why we have to check the mount status
-      // cause views in tab is always rendered
       setState(() {
         images = responseObj['result'];
       });
+    }).catchError((Object error) {
+      print('/cm/news/findFocus');
     });
-  }
-
-  Future getNewCarousel() async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    http.Response response = await http.get(
-      Uri.encodeFull('$urlHost/cm/news/findFocus?contentPlatform=CNTNTPLT_NEWS'),
-      headers: {
-        "Accept": "application/json, text/plain, */*",
-        "Authorization": 'bearer $accessToken',
-        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-      }
-    );
-
-    return response;
   }
 
   void renderPageAsPageNo(int _pageNo) {
-    setState(() {
-      isLoading = true;
-    });
+    Map<String, int> queryParams = {
+      "pageNo": _pageNo,
+      "pageSize": pageSize
+    };
 
-    getNexPage(_pageNo).then((res) {
-      Map resJson = jsonDecode(res.body);
+    String newsListApi = '/cm/news/findByCurrentUser';
+
+    HonyHttp.get(newsListApi, params: queryParams, user: widget.user).then((res) {
+      Map responseObj = jsonDecode(res);
+      if (responseObj['success'] == false) {
+        throw({ "msg": "获取翻页数据失败" });
+      }
       this.setState(() {
-        totalPageMount = resJson['result']['totalPages'];
-        pageNo = _pageNo;
-        news = news + resJson['result']['content'];
         isLoading = false;
-        print(news.length);
+        news = news + responseObj['result']['content'];
+        totalPageMount = responseObj['result']['totalPages'];
+        pageNo = _pageNo;
       });
-    }).whenComplete((){
-      setState(() {
+    }).catchError((Object error)  {
+      print('/cm/news/findByCurrentUser');
+      print(error);
+
+    }).whenComplete(() {
+      this.setState(() {
         isLoading = false;
       });
     });
   }
 
-  Future getNexPage(int pageNo) async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    http.Response response = await http.get(
-      Uri.encodeFull('$urlHost/cm/news/findByCurrentUser?contentPlatform=CNTNTPLT_NEWS&pageNo=$pageNo&pageSize=$pageSize'),
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Authorization": 'bearer $accessToken',
-          "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-        }
-    );
-
-
-    return response;
-  }
-  
   @override
   double getWidth(double num, double winWidth) {
     // TODO: implement getWidth
@@ -243,14 +221,14 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
           )
         ],
       ),
-      body: news.length == 0 ? new Center(
+      body: news.length == 0 && isLoading ? new Center(
           child: new CircularProgressIndicator(),
         )
         :
         new RefreshIndicator(
           child:new ListView.builder(
             controller: controller,
-            itemCount: news.length,
+            itemCount: news.length + 1,
             itemBuilder: (context, index) {
               return rowBuilder(index);
             }
