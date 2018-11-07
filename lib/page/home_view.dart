@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../constant/colors.dart';
-import '../constant/sizes.dart';
-import '../helper/pixelCompact.dart';
 
 import './subPage/mine_view.dart';
 import './subPage/newsIndex_view.dart';
@@ -13,7 +12,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin, PixelCompactMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   TabController _tc;
   int _activeIndex = 0;
   VoidCallback onTabChanged;
@@ -41,12 +40,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     _tc.removeListener(onTabChanged);
     _tc.dispose();
     super.dispose();
-  }
-  
-  @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
   }
 
   @override
@@ -81,7 +74,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
-class CustomTabItem extends StatelessWidget implements PixelCompactMixin{
+class CustomTabItem extends StatelessWidget {
   final IconData _iconData;
   final String _textData;
   final bool _active;
@@ -96,31 +89,29 @@ class CustomTabItem extends StatelessWidget implements PixelCompactMixin{
       ): super(key: key);
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Container(
       width: double.infinity,
-      height: getWidth(100.0, winWidth),
+      height: ScreenUtil().setWidth(100),
       color: _active ? primaryColor : bottomNavColor,
       child: new Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           new Icon(
             _iconData,
-            size: getWidth(40.0, winWidth),
+            size: ScreenUtil().setWidth(40),
           ),
-          new Padding(padding: EdgeInsets.only(top: getWidth(10.0, winWidth))),
+          new Padding(
+              padding: EdgeInsets.only(
+                  top: ScreenUtil().setWidth(10)
+              )
+          ),
           new Text(
             _textData,
-            overflow: TextOverflow.ellipsis, maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             style: new TextStyle(
-              fontSize: getWidth(26.0, winWidth),
+              fontSize: ScreenUtil().setWidth(26),
             ),
           )
         ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../helper/pixelCompact.dart';
-import '../constant/sizes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../constant/colors.dart';
 
 class CombineIconInput extends StatefulWidget {
@@ -25,7 +25,7 @@ class CombineIconInput extends StatefulWidget {
   State<StatefulWidget> createState() => new _CombineIconInputState();
 }
 
-class _CombineIconInputState extends State<CombineIconInput> implements PixelCompactMixin{
+class _CombineIconInputState extends State<CombineIconInput> {
   bool eyeOpen = false;
   String inputContent = '';
 
@@ -41,11 +41,6 @@ class _CombineIconInputState extends State<CombineIconInput> implements PixelCom
     super.dispose();
   }
 
-  @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
-
   void toggleEye() {
     setState(() {
       eyeOpen = !eyeOpen;
@@ -54,21 +49,20 @@ class _CombineIconInputState extends State<CombineIconInput> implements PixelCom
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     Widget eyeWidget = widget.hasEye ? new IconButton(
       icon: !eyeOpen ? 
         new Icon(IconData(0xe600, fontFamily: 'aliFont')) 
         : 
         new Icon(IconData(0xe69c, fontFamily: 'aliFont')),
-      iconSize: getWidth(40.0, winWidth),
+      iconSize: ScreenUtil().setWidth(40),
       color: primaryColor,
       onPressed: toggleEye,
     ): new Container();
 
     return new Container(
-      padding: EdgeInsets.symmetric(vertical: getWidth(20.0, winWidth)),
+      padding: EdgeInsets.symmetric(vertical: ScreenUtil().setWidth(20)),
       decoration: new BoxDecoration(
-          border: new Border(bottom: new BorderSide(color: primaryColor, width: getWidth(2.0, winWidth)))
+          border: new Border(bottom: new BorderSide(color: primaryColor, width: ScreenUtil().setWidth(2)))
       ),
       child: new Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -76,24 +70,24 @@ class _CombineIconInputState extends State<CombineIconInput> implements PixelCom
           new Icon(
             widget._icon,
             color: primaryColor,
-            size: getWidth(40.0, winWidth),
+            size: ScreenUtil().setWidth(40),
           ),
           new Padding(
               padding: EdgeInsets.only(
-                  right: getWidth(20.0, winWidth)
+                  right: ScreenUtil().setWidth(20)
               )
           ),
           new Expanded(
             child: new TextField(
               style: new TextStyle(
-                fontSize: getWidth(30.0, winWidth),
+                fontSize: ScreenUtil().setWidth(30),
                 color: mainFontColor,
               ),
               decoration: new InputDecoration(
                 border: InputBorder.none,
                 hintText: widget.placeHolder,
                 hintStyle: new TextStyle(
-                    fontSize: getWidth(30.0, winWidth),
+                    fontSize: ScreenUtil().setWidth(30),
                     color: assistFontColor
                 ),
               ),

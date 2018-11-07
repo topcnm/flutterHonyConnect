@@ -1,7 +1,7 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
 
@@ -15,6 +15,8 @@ import '../helper/pixelCompact.dart';
 
 import '../model/appState.dart';
 import '../model/user.dart';
+
+import '../helper/HttpUtils.dart';
 
 //import '../ui/toast.dart';
 class NewsDetail extends StatelessWidget {
@@ -46,7 +48,10 @@ class NewsDetailWidget extends StatefulWidget {
 _NewsDetailWidgetState createState() => _NewsDetailWidgetState();
 }
 
-class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCompactMixin{
+class _NewsDetailWidgetState extends State<NewsDetailWidget> {
+  final _scaffoldKey = new GlobalKey<ScaffoldState>();
+  VoidCallback _showPersBottomSheetCallBack;
+
   String cntntId = '';
   String htmlStr = '';
   String cntntType ='';
@@ -59,7 +64,6 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
   bool shareFlg = false;
   List fileList = [];
 
-  bool isCommenting = false;
   Map currentComment = {};
   List comments = [];
 
@@ -67,12 +71,18 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
   void initState() {
     // TODO: implement initState
     super.initState();
+    _showPersBottomSheetCallBack = _showBottomSheet;
     renderPageContent();
     renderPageComment();
   }
 
+
   void renderPageContent() {
-    getPageContent().then((res) {
+    HonyHttp.get(
+      "/cm/news/findById",
+      params: { "cntntId": widget.cntntId },
+      user: widget.user
+    ).then((res) {
       Map resJson = jsonDecode(res);
       if (resJson['success'] && resJson['result'] != null) {
         setState(() {
@@ -88,24 +98,12 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
     });
   }
 
-  Future getPageContent() async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    http.Response response = await http.get(
-      Uri.encodeFull('$urlHost/cm/news/findById?cntntId=${widget.cntntId}'),
-      headers: {
-        "Accept": "application/json, text/plain, */*",
-        "Authorization": 'bearer $accessToken',
-        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-      }
-    );
-
-    return response.body;
-  }
-
   void renderPageComment() {
-    _getPageComment().then((res) {
+    HonyHttp.get(
+      "/cm/comment/findByCntnId",
+      params: { "cntntId": widget.cntntId, "pageNo": 1, "pageSize": 999 },
+      user: widget.user
+    ).then((res) {
       Map resJson = jsonDecode(res);
       if (resJson['success'] && resJson['result'] != null) {
         setState((){
@@ -115,59 +113,28 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
     });
   }
 
-  Future _getPageComment() async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    http.Response response = await http.get(
-        Uri.encodeFull('$urlHost/cm/comment/findByCntnId?cntntId=${widget.cntntId}&pageNo=1&pageSize=999'),
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Authorization": 'bearer $accessToken',
-          "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-        }
-    );
-
-    return response.body;
-  }
-
   void handleCommentCommit(String reply) {
-    _handleCommentCommit(reply).then((res){
+    HonyHttp.postJson(
+      "/cm/comment/create",
+      params: { "cntntId": cntntId, "reply": reply },
+      user: widget.user
+    ).then((res){
       Map resJson = jsonDecode(res);
       if (resJson['success']) {
         setState(() {
           comments = [resJson['result']] + comments;
         });
-        hideComment();
+        Navigator.pop(context); // 关闭dailog
       }
     });
   }
 
-  Future _handleCommentCommit(String reply) async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    Map postObj = {
-      "cntntId": cntntId,
-      "reply": reply
-    };
-
-    http.Response response = await http.post(
-      Uri.encodeFull('$urlHost/cm/comment/create'),
-      body: jsonEncode(postObj),
-      headers: {
-        "Accept": "application/json, application/x-www-form-urlencoded",
-        "Authorization": 'bearer $accessToken',
-        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-        "content-type": 'application/json',
-      }
-    );
-
-    return response.body;
-  }
-
   void handleContentLike() {
-    _handleContentLike().then((res) {
+    HonyHttp.postJson(
+      "/cm/comment/${ isLike ? 'unLikeContent' : 'likeContent'}",
+      params: { "cntntId": cntntId },
+      user: widget.user
+    ).then((res) {
       Map resJson = jsonDecode(res);
       if (resJson['success']) {
         setState((){
@@ -177,30 +144,15 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
     });
   }
 
-  Future _handleContentLike() async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
-    Map postObj = {
-      "cntntId": cntntId
-    };
-
-    http.Response response = await http.post(
-      Uri.encodeFull('$urlHost/cm/comment/${ isLike ? 'unLikeContent' : 'likeContent'}'),
-      body: jsonEncode(postObj),
-      headers: {
-        "Accept": "application/json, application/x-www-form-urlencoded",
-        "Authorization": 'bearer $accessToken',
-        "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-        "content-type": 'application/json',
-      }
-    );
-
-    return response.body;
-  }
-
   void handleContentFav() {
-    _handleContentFav().then((res) {
+    HonyHttp.postJson(
+      "/ucm/user/${ isFavour ? 'unFavorite' : 'createFavorite'}",
+      params: {
+        "refId": cntntId,
+        "type": 'CONTENT'
+      },
+      user: widget.user
+    ).then((res) {
       Map resJson = jsonDecode(res);
       if (resJson['success']) {
         setState((){
@@ -210,169 +162,150 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> implements PixelCom
     });
   }
 
-  Future _handleContentFav() async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
+  void _showBottomSheet() {
+    setState(() {
+      _showPersBottomSheetCallBack = null;
+      currentComment = {};
+    });
 
-    Map postObj = {
-      "refId": cntntId,
-      "type": 'CONTENT'
-    };
-
-    http.Response response = await http.post(
-        Uri.encodeFull('$urlHost/ucm/user/${ isFavour ? 'unFavorite' : 'createFavorite'}'),
-        body: jsonEncode(postObj),
-        headers: {
-          "Accept": "application/json, application/x-www-form-urlencoded",
-          "Authorization": 'bearer $accessToken',
-          "Cookie": 'refreshToken=$refreshToken accessToken=$accessToken',
-          "content-type": 'application/json',
-        }
-    );
-
-    return response.body;
+    _scaffoldKey.currentState.showBottomSheet((context) {
+      return new CommentDialog(
+        onTapCancel: () {
+          Navigator.pop(context);
+        },
+        onTapConfirm: handleCommentCommit,
+      );
+    }).closed.whenComplete(() {
+      if (mounted) {
+        setState(() {
+          _showPersBottomSheetCallBack = _showBottomSheet;
+        });
+      }
+    });
   }
 
   void showComment(Map commentItem) {
     setState(() {
-      isCommenting = true;
       currentComment = commentItem;
     });
-  }
 
-  void hideComment() {
-    setState(() {
-      isCommenting = false;
+    showModalBottomSheet(context: context, builder: (BuildContext ctx) {
+      return new CommentDialog(
+        onTapCancel: () {
+          Navigator.pop(context);
+        },
+        onTapConfirm: handleCommentCommit,
+      );
     });
-  }
-
-  @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
   }
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
-    return new Stack(
-      fit: StackFit.expand,
-      children: [
-        new Scaffold(
-          appBar: new AppBar(
-            title: new Text('资讯详情'),
-            centerTitle: true,
-            actions: <Widget>[
-              new IconButton(
-                  icon: new Icon(IconData(0xe6ba, fontFamily: 'aliFont'), color: emptyColor,),
-                  onPressed: null
-              )
-            ],
+    return new Scaffold(
+      key: _scaffoldKey,
+      appBar: new AppBar(
+        title: new Text('资讯详情'),
+        centerTitle: true,
+        actions: <Widget>[
+          new IconButton(
+              icon: new Icon(IconData(0xe6ba, fontFamily: 'aliFont'), color: emptyColor,),
+              onPressed: null
+          )
+        ],
+      ),
+      body: new ListView(
+        children: <Widget>[
+          new Container(
+            color: greyBgColor,
+            padding: EdgeInsets.symmetric(
+                vertical: ScreenUtil().setWidth(10),
+                horizontal: ScreenUtil().setWidth(30)
+            ),
+            child: new Text('Investment Express', style: new TextStyle(
+              fontSize: ScreenUtil().setWidth(16)
+            ),),
           ),
-          body: new ListView(
-            children: <Widget>[
-              new Container(
-                color: greyBgColor,
-                padding: EdgeInsets.symmetric(
-                    vertical: getWidth(10.0, winWidth),
-                    horizontal: getWidth(30.0, winWidth)
-                ),
-                child: new Text('Investment Express', style: new TextStyle(
-                  fontSize: getWidth(16.0, winWidth)
-                ),),
-              ),
-              new Container(
-                padding: EdgeInsets.symmetric(
-                    vertical: getWidth(20.0, winWidth),
-                  horizontal: getWidth(30.0, winWidth)
-                ),
-                child: new Column(
-                  children: <Widget>[
-                    new Container(
-                      child: new Text(
-                        topic,
-                        style: new TextStyle(
-                          fontSize: getWidth(32.0, winWidth),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(bottom: getWidth(10.0, winWidth)),
-                    ),
-                    new Container(
-                      child: new Html(
-                        data: htmlStr,
-                        customRender: (node, children) {
-                          if (node is dom.Element && node.localName == "img" && node.attributes['src'] != null) {
-                            String oldStr = node.attributes['src'];
-                            if (oldStr.startsWith("/")) {
-                              node.attributes['src'] = urlHost + oldStr;
-                            }
-                          }
-                        }
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              new ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true, // ！！滚动区域内嵌到滚动区域，需要此属性！
-                itemCount: comments.length,
-                itemBuilder: (context, int index) {
-                  Map comment = comments[index];
-                  CommentModel cm = new CommentModel(
-                    cmntId: comment['cmntId'],
-                    cntntId: comment['cntntId'],
-                    like: comment['like'],
-                    likeCount: comment['likeCount'],
-                    reply: comment['reply'],
-                    replyTime: comment['replyTime'],
-                    userheadImg: comment['userheadImg'],
-                    userName: comment['userName']
-                  );
-                  return new CommentItem(comment: cm,);
-                }
-              )
-            ],
-          ),
-          bottomNavigationBar: new Container(
-            child: new Flex(
-              direction: Axis.horizontal,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+          new Container(
+            padding: EdgeInsets.symmetric(
+                vertical: ScreenUtil().setWidth(20),
+              horizontal: ScreenUtil().setWidth(30)
+            ),
+            child: new Column(
               children: <Widget>[
-                new NewsDetailBottomMenuItem(
-                  isActive: isLike,
-                  text: "Like",
-                  icon: IconData(0xe644, fontFamily: 'aliFont'),
-                  onTap: handleContentLike,
+                new Container(
+                  child: new Text(
+                    topic,
+                    style: new TextStyle(
+                      fontSize: ScreenUtil().setWidth(32),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.only(bottom: ScreenUtil().setWidth(10)),
                 ),
-                new NewsDetailBottomMenuItem(
-                  isActive: false,
-                  text: "Comments",
-                  icon: IconData(0xe626, fontFamily: 'aliFont'),
-                  onTap: (){
-                    showComment({});
-                  },
-                ),
-                new NewsDetailBottomMenuItem(
-                  isActive: isFavour,
-                  text: "Favourites",
-                  icon: IconData(0xe7ae, fontFamily: 'aliFont'),
-                  onTap: handleContentFav,
-                ),
+                new Container(
+                  child: new Html(
+                    data: htmlStr,
+                    customRender: (node, children) {
+                      if (node is dom.Element && node.localName == "img" && node.attributes['src'] != null) {
+                        String oldStr = node.attributes['src'];
+                        if (oldStr.startsWith("/")) {
+                          node.attributes['src'] = urlHost + oldStr;
+                        }
+                      }
+                    }
+                  ),
+                )
               ],
             ),
+          ),
+          new ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true, // ！！滚动区域内嵌到滚动区域，需要此属性！
+            itemCount: comments.length,
+            itemBuilder: (context, int index) {
+              Map comment = comments[index];
+              CommentModel cm = new CommentModel(
+                cmntId: comment['cmntId'],
+                cntntId: comment['cntntId'],
+                like: comment['like'],
+                likeCount: comment['likeCount'],
+                reply: comment['reply'],
+                replyTime: comment['replyTime'],
+                userheadImg: comment['userheadImg'],
+                userName: comment['userName']
+              );
+              return new CommentItem(comment: cm,);
+            }
           )
+        ],
+      ),
+      bottomNavigationBar: _showPersBottomSheetCallBack == null ? new Container(height: 0.0,) : new Container(
+        child: new Flex(
+          direction: Axis.horizontal,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            new NewsDetailBottomMenuItem(
+              isActive: isLike,
+              text: "Like",
+              icon: IconData(0xe644, fontFamily: 'aliFont'),
+              onTap: handleContentLike,
+            ),
+            new NewsDetailBottomMenuItem(
+              isActive: false,
+              text: "Comments",
+              icon: IconData(0xe626, fontFamily: 'aliFont'),
+              onTap: _showPersBottomSheetCallBack,
+            ),
+            new NewsDetailBottomMenuItem(
+              isActive: isFavour,
+              text: "Favourites",
+              icon: IconData(0xe7ae, fontFamily: 'aliFont'),
+              onTap: handleContentFav,
+            ),
+          ],
         ),
-        isCommenting ?
-          new CommentDialog(
-            onTapCancel: hideComment,
-            onTapConfirm: handleCommentCommit,
-          )
-          :
-          new Container(),
-      ]
+      )
     );
   }
 }
@@ -394,20 +327,14 @@ class NewsDetailBottomMenuItem extends StatefulWidget {
   _NewsDetailBottomMenuItemState createState() => _NewsDetailBottomMenuItemState();
 }
 
-class _NewsDetailBottomMenuItemState extends State<NewsDetailBottomMenuItem> with PixelCompactMixin{
-  @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
+class _NewsDetailBottomMenuItemState extends State<NewsDetailBottomMenuItem> {
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Expanded(
       flex: 1,
       child: new Container(
-        height: getWidth(100.0, winWidth),
+        height: ScreenUtil().setWidth(100),
         decoration: new BoxDecoration(
           border: new Border(top: new BorderSide(color: splitColor)),
         ),
@@ -420,18 +347,18 @@ class _NewsDetailBottomMenuItemState extends State<NewsDetailBottomMenuItem> wit
               children: <Widget>[
                 new Icon(
                   widget.icon,
-                  size: getWidth(36.0, winWidth),
+                  size: ScreenUtil().setWidth(36),
                   color: widget.isActive ? emptyColor: primaryColor,
                 ),
                 new Padding(
                     padding: EdgeInsets.only(
-                        top: getWidth(8.0, winWidth)
+                        top: ScreenUtil().setWidth(8)
                     )
                 ),
                 new Text(
                   widget.text,
                   style: new TextStyle(
-                    fontSize: getWidth(20.0, winWidth),
+                    fontSize: ScreenUtil().setWidth(20),
                     color: widget.isActive ? emptyColor: primaryColor
                   ),
                 ),
@@ -480,20 +407,14 @@ class CommentItem extends StatefulWidget {
   _CommentItemState createState() => _CommentItemState();
 }
 
-class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
-  @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
+class _CommentItemState extends State<CommentItem> {
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Container(
       padding: EdgeInsets.symmetric(
-          vertical: getWidth(20.0, winWidth),
-          horizontal: getWidth(30.0, winWidth)
+          vertical: ScreenUtil().setWidth(20),
+          horizontal: ScreenUtil().setWidth(30)
       ),
       decoration: new BoxDecoration(
           border: new Border(bottom: new BorderSide(color: splitColor))
@@ -501,13 +422,19 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
       child: new Row(
         children: <Widget>[
           new Padding(
-            padding: EdgeInsets.only(bottom: 20.0),
+            padding: EdgeInsets.only(
+                bottom: ScreenUtil().setWidth(20)
+            ),
             child: new CircleAvatar(
-              radius: getWidth(26.0, winWidth),
+              radius: ScreenUtil().setWidth(26),
               backgroundImage: new NetworkImage('$urlHost/nd/image/${widget.comment.userheadImg}'),
             ),
           ),
-          new Padding(padding: EdgeInsets.only(left: getWidth(20.0, winWidth))),
+          new Padding(
+              padding: EdgeInsets.only(
+                  left: ScreenUtil().setWidth(20)
+              )
+          ),
           new Expanded(
             child: new Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,14 +449,14 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
                           new Text(
                             widget.comment.userName,
                             style: new TextStyle(
-                              fontSize: getWidth(18.0, winWidth),
+                              fontSize: ScreenUtil().setWidth(18),
                             ),
                           ),
 
                           new Text(
                             '4 hour before',
                             style: new TextStyle(
-                                fontSize: getWidth(14.0, winWidth),
+                                fontSize: ScreenUtil().setWidth(14),
                                 color: assistFontColor
                             ),
                           ),
@@ -542,7 +469,7 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
                               new IconData(0xe644, fontFamily: 'aliFont'),
                               color: primaryColor,
                             ),
-                            iconSize: getWidth(26.0, winWidth),
+                            iconSize: ScreenUtil().setWidth(16),
                             onPressed: null
                           ),
                           new Text(
@@ -558,7 +485,7 @@ class _CommentItemState extends State<CommentItem> with PixelCompactMixin{
                   new Text(
                     widget.comment.reply,
                     style: new TextStyle(
-                        fontSize: getWidth(22.0, winWidth)
+                        fontSize: ScreenUtil().setWidth(22)
                     ),
                   )
                 ]
@@ -583,11 +510,8 @@ class CommentDialog extends StatefulWidget {
   _CommentDialogState createState() => new _CommentDialogState();
 }
 
-class _CommentDialogState extends State<CommentDialog> with SingleTickerProviderStateMixin implements PixelCompactMixin{
+class _CommentDialogState extends State<CommentDialog> with SingleTickerProviderStateMixin {
   TextEditingController textEditingController = new TextEditingController();
-  AnimationController controller;
-  Animation<double> animation;
-
   String result = '';
 
   void handleConfirm() {
@@ -601,98 +525,78 @@ class _CommentDialogState extends State<CommentDialog> with SingleTickerProvider
   void initState() {
     // TODO: implement initState
     super.initState();
-    AnimationController controller = new AnimationController(
-        vsync: this,
-      duration: new Duration(milliseconds: 100)
-    );
-    animation = new CurvedAnimation(parent: controller, curve: Curves.decelerate);
-    animation.addListener((){setState(() {
-
-    });});
-    controller.forward();
   }
 
   @override
   void dispose() {
-    controller.dispose();
     textEditingController.dispose();
     super.dispose();
   }
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-  
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(new FocusNode());
       },
-      child: new Scaffold(
-        resizeToAvoidBottomPadding: true,
-        backgroundColor: Colors.black54,
-        body: new Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            new Container(
-              color: emptyColor,
-              child: new Column(
-                children: <Widget>[
-                  new Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: getWidth(20.0, winWidth),
-                      horizontal: getWidth(30.0, winWidth)
+      child: new Container(
+          height: ScreenUtil().setWidth(580),
+
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              new Container(
+                height: ScreenUtil().setWidth(89),
+                padding: EdgeInsets.symmetric(
+                  vertical: ScreenUtil().setWidth(20),
+                  horizontal: ScreenUtil().setWidth(30)
+                ),
+                width: double.infinity,
+                child: new Row(
+                  children: <Widget>[
+                    new CommentDialogButton(text: 'Cancel', onTap: widget.onTapCancel),
+                    new Expanded(
+                        child: new Container(
+                          alignment: Alignment.center,
+                          child: new Text('Comment',
+                            style: new TextStyle(fontSize: ScreenUtil().setWidth(30)),
+                          ),
+                        )
                     ),
-                    width: double.infinity,
-                    child: new Row(
-                      children: <Widget>[
-                        new CommentDialogButton(text: 'Cancel', onTap: widget.onTapCancel),
-                        new Expanded(
-                            child: new Container(
-                              alignment: Alignment.center,
-                              child: new Text('Comment',
-                                style: new TextStyle(fontSize: getWidth(30.0, winWidth)),
-                              ),
-                            )
-                        ),
-                        new CommentDialogButton(text: 'Send', onTap: handleConfirm),
-                      ],
-                    ),
-                    decoration: new BoxDecoration(
-                      border: new Border(bottom: new BorderSide(color: splitColor))
-                    ),
-                  ),
-                  new Container(
-                    height: animation.value * getWidth(490.0, winWidth),
-                    padding: EdgeInsets.symmetric(
-                        vertical: getWidth(20.0, winWidth),
-                      horizontal: getWidth(30.0, winWidth)
-                    ),
-                    child: new TextField(
-                      keyboardType: TextInputType.multiline,
-                      maxLines: 999,
-                      decoration: new InputDecoration(
-                        hintText: 'Please type in',
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (String str) {
-                        setState(() {
-                          result = str;
-                        });
-                      },
-                      controller: textEditingController,
-                    ),
+                    new CommentDialogButton(text: 'Send', onTap: handleConfirm),
+                  ],
+                ),
+                decoration: new BoxDecoration(
+                  border: new Border(
+                    bottom: new BorderSide(color: splitColor),
+                    top: new BorderSide(color: splitColor),
                   )
-                ],
+                ),
               ),
-            ),
-          ],
+              new Container(
+                height: ScreenUtil().setWidth(490),
+                padding: EdgeInsets.symmetric(
+                    vertical: ScreenUtil().setWidth(20),
+                  horizontal: ScreenUtil().setWidth(30)
+                ),
+                child: new TextField(
+                  keyboardType: TextInputType.multiline,
+                  maxLines: 999,
+                  decoration: new InputDecoration(
+                    hintText: 'Please type in',
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (String str) {
+                    setState(() {
+                      result = str;
+                    });
+                  },
+                  controller: textEditingController,
+                ),
+              )
+            ],
+          ),
         ),
-      )
     );
   }
 }

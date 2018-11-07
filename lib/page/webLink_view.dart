@@ -30,20 +30,11 @@ class WebLinkPageState extends State<WebLinkPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> titleContent = [];
-    titleContent.add(new Text("外部资讯详情"));
-    if (isLoading) {
-      titleContent.add(new Icon(Icons.refresh));
-    }
-
     return new WebviewScaffold(
-        url: widget.url,
+      url: widget.url,
       appBar: new AppBar(
-        title: new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: titleContent,
-        ),
-        centerTitle: true,
+        title: new Text("外部资讯详情"),
+        centerTitle: !isLoading,
       ),
       withZoom: false,
       withLocalStorage: true,

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
-//import '';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -12,9 +12,7 @@ import 'package:redux/redux.dart';
 import '../../model/appState.dart';
 
 import '../../constant/colors.dart';
-import '../../constant/sizes.dart';
 import '../../constant/http.dart';
-import '../../helper/pixelCompact.dart';
 import '../../ui/toast.dart';
 
 ///1.怎么选择照片；2.怎么拼装上传接口 ！！！
@@ -51,14 +49,9 @@ class PersonalPageWidget extends StatefulWidget {
   _PersonalPageWidgetState createState() => _PersonalPageWidgetState();
 }
 
-class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompactMixin{
+class _PersonalPageWidgetState extends State<PersonalPageWidget> {
   bool isUploading = false;
   File _imageFile;
-
-  @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
 
   Future<Null> uploadImage() async {
     String accessToken = widget.storeObj['userState'].accessToken;
@@ -98,13 +91,13 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
       Map<String, dynamic> resData = jsonDecode(resStr);
 
       if (resData['success'] != true) {
-        showConnectToast("某种原因，上传失败，请重新发送");
+        showErrorToast("某种原因，上传失败，请重新发送");
         return null;
       }
       widget.storeObj['onSuccessModifyPhoto'](resData['result'], (bool isSuccess) {
         print('is success is $isSuccess');
         if (!isSuccess) {
-          showConnectToast("上传成功，但是无法替换");
+          showErrorToast("上传成功，但是无法替换");
           return null;
         }
         print("上传成功");
@@ -115,9 +108,8 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
   void showImagePicker(context) {
     /// showModalBottomSheet 底部网上升起的组件
     showModalBottomSheet<void>(context: context, builder: (BuildContext ctx) {
-      double winWidth = MediaQuery.of(context).size.width;
       return new Container(
-        height: getWidth(180.0, winWidth),
+        height: ScreenUtil().setWidth(180),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -129,13 +121,17 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
   }
 
   Widget renderImagePickerSource(String title) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new InkWell(
       onTap: syncImage,
       child: new Container(
-        height: getWidth(60.0, winWidth),
+        height: ScreenUtil().setWidth(60),
         child: new Center(
-          child: new Text(title, style: new TextStyle(fontSize: getWidth(27.0, winWidth)),),
+          child: new Text(
+            title,
+            style: new TextStyle(
+                fontSize: ScreenUtil().setWidth(27)
+            ),
+          ),
         ),
       ),
     );
@@ -151,10 +147,9 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     TextStyle myStyle = new TextStyle(
       color: emptyColor,
-      fontSize: getWidth(24.0, winWidth),
+      fontSize: ScreenUtil().setWidth(24),
     );
 
     return new Stack(
@@ -168,7 +163,7 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
           body: new ListView(
             children: <Widget>[
               new Container(
-                height: getWidth(345.0, winWidth),
+                height: ScreenUtil().setWidth(345),
                 decoration: new BoxDecoration(
                   color: primaryColor,
                   image: new DecorationImage(
@@ -180,11 +175,15 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    new Padding(padding: EdgeInsets.only(top: getWidth(50.0, winWidth))),
+                    new Padding(
+                        padding: EdgeInsets.only(
+                            top: ScreenUtil().setWidth(50)
+                        )
+                    ),
                     new Container(
-                        height: getWidth(120.0, winWidth),
-                        width: getWidth(120.0, winWidth),
-                        padding: const EdgeInsets.all(2.0),
+                        height: ScreenUtil().setWidth(120),
+                        width: ScreenUtil().setWidth(120),
+                        padding: EdgeInsets.all(ScreenUtil().setWidth(2)),
                         decoration: new BoxDecoration(
                           color: emptyColor,
                           shape: BoxShape.circle,
@@ -194,7 +193,7 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
                             showImagePicker(context);
                           },
                           child: new CircleAvatar(
-                              radius: getWidth(58.0, winWidth),
+                              radius: ScreenUtil().setWidth(58),
                               backgroundColor: primaryColor,
                               backgroundImage: widget.storeObj['userState'].photoUrl != null ?
                               new NetworkImage('$urlHost/nd/image/${widget.storeObj['userState'].photoUrl}')
@@ -204,11 +203,22 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
                         )
                     ),
 
-                    new Padding(padding: EdgeInsets.only(top: getWidth(20.0, winWidth))),
-                    new Text(widget.storeObj['userState'].position, style: myStyle,),
-                    new Padding(padding: EdgeInsets.only(top: getWidth(20.0, winWidth))),
+                    new Padding(
+                        padding: EdgeInsets.only(
+                            top: ScreenUtil().setWidth(20)
+                        )
+                    ),
+                    new Text(
+                      widget.storeObj['userState'].position,
+                      style: myStyle,
+                    ),
+                    new Padding(
+                        padding: EdgeInsets.only(
+                            top: ScreenUtil().setWidth(20)
+                        )
+                    ),
                     new Text(widget.storeObj['userState'].name, style: new TextStyle(
-                        fontSize: getWidth(30.0, winWidth),
+                        fontSize: ScreenUtil().setWidth(30),
                         fontWeight: FontWeight.bold,
                         color: emptyColor
                     ),)
@@ -218,7 +228,11 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
               new Container(
                 child: new Column(
                   children: <Widget>[
-                    new Padding(padding: EdgeInsets.only(top: getWidth(20.0, winWidth))),
+                    new Padding(
+                        padding: EdgeInsets.only(
+                            top: ScreenUtil().setWidth(20)
+                        )
+                    ),
                     new PersonalRow(
                         keyText: "Mobile",
                         valueText: widget.storeObj['userState'].mobile
@@ -238,7 +252,7 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> with PixelCompa
   }
 }
 
-class PersonalRow extends StatelessWidget implements PixelCompactMixin{
+class PersonalRow extends StatelessWidget {
   final String keyText;
   final String valueText;
 
@@ -248,16 +262,10 @@ class PersonalRow extends StatelessWidget implements PixelCompactMixin{
   });
 
   @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     TextStyle uStyle = new TextStyle(
       color: Colors.black,
-      fontSize: getWidth(27.0, winWidth),
+      fontSize: ScreenUtil().setWidth(27),
     );
 
     return new Container(
@@ -266,12 +274,17 @@ class PersonalRow extends StatelessWidget implements PixelCompactMixin{
         children: <Widget>[
           new Container(
             color: primaryColor,
-            height: getWidth(20.0, winWidth),
-            width: getWidth(20.0, winWidth),
+            height: ScreenUtil().setWidth(20),
+            width: ScreenUtil().setWidth(20),
           ),
           new Padding(
-            padding: EdgeInsets.only(left: getWidth(20.0, winWidth)),
-            child: new Text(keyText, style: uStyle,),
+            padding: EdgeInsets.only(
+                left: ScreenUtil().setWidth(20)
+            ),
+            child: new Text(
+              keyText,
+              style: uStyle,
+            ),
           ),
           new Expanded(
               child: new Container(
@@ -285,8 +298,8 @@ class PersonalRow extends StatelessWidget implements PixelCompactMixin{
         ],
       ),
       padding: EdgeInsets.symmetric(
-          vertical: getWidth(20.0, winWidth),
-          horizontal: getWidth(30.0, winWidth)
+          vertical: ScreenUtil().setWidth(20),
+          horizontal: ScreenUtil().setWidth(30)
       ),
     );
   }

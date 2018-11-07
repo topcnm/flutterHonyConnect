@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart'; // 手机基本尺寸设置
 
 import '../constant/colors.dart';
 import '../constant/sizes.dart';
@@ -38,6 +39,7 @@ class _WelcomeState extends State<Welcome> with PixelCompactMixin{
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.instance = ScreenUtil(width: 750, height: 1334)..init(context);
     double winWidth = MediaQuery.of(context).size.width;
 
     return new Material(

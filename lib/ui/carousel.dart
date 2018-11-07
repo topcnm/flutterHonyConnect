@@ -1,6 +1,6 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
 
 /*
 * 图片对象的基本要素：

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -40,7 +40,7 @@ class InvestIndexPageWidget extends StatefulWidget {
   _InvestIndexPageWidgetState createState() => _InvestIndexPageWidgetState();
 }
 
-class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implements PixelCompactMixin{
+class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> {
   ScrollController controller;
 
   List images = [];
@@ -76,18 +76,14 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
   }
 
   void getCarouselImages() {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
-
     HonyHttp.get(
         "/cm/product/getFocus",
         params: { "contentPlatform": "CNTNTPLT_NEWS"},
-        accessToken: accessToken,
-        refreshToken: refreshToken
+        user: widget.user,
     ).then((res) {
       Map<String, dynamic> imgData = jsonDecode(res);
       if (imgData['success'] == null || imgData['success'] == false) {
-        showConnectToast("请求错误");
+        showErrorToast("请求错误");
         return null;
       }
       setState(() {
@@ -99,14 +95,11 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
   }
 
   void getProductsAsPageNo(int _pageNo) async {
-    String accessToken = widget.user.accessToken;
-    String refreshToken = widget.user.refreshToken;
 
     HonyHttp.get(
         '/cm/product/findByCurrentUser',
         params: { "pageNo": _pageNo, "pageSize": pageSize },
-        accessToken: accessToken,
-        refreshToken: refreshToken
+        user: widget.user,
     ).then((res) {
       Map responseObj = jsonDecode(res);
       if (responseObj['success'] == false) {
@@ -121,7 +114,7 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
     }).catchError((Object error)  {
       print('/cm/product/findByCurrentUser');
       print(error);
-//      showConnectToast(error.msg);
+//      showErrorToast(error.msg);
     }).whenComplete(() {
       this.setState(() {
         isLoading = false;
@@ -146,7 +139,6 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
   }
 
   Widget rowRender(i) {
-    double winWidth = MediaQuery.of(context).size.width;
     // 渲染成carousel
     if (i == 0) {
       List _images = images.map((item) {
@@ -159,10 +151,10 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
 
       return new Container(
         width: double.infinity,
-        height: getWidth(300.0, winWidth),
+        height: ScreenUtil().setWidth(300),
         child: new HonyCarousel(
-          dotSize: getWidth(8.0, winWidth),
-          dotSpacing: getWidth(25.0, winWidth),
+          dotSize: ScreenUtil().setWidth(8),
+          dotSpacing: ScreenUtil().setWidth(25),
           boxFit: BoxFit.fill,
           animationDuration: new Duration(milliseconds: 600),
           animationCurve: Curves.easeOut,
@@ -205,12 +197,6 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> implement
   }
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
@@ -246,10 +232,9 @@ class InvestTabComponent extends StatelessWidget implements PixelCompactMixin{
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Container(
       color: greyBgColor,
-      height: getWidth(150.0, winWidth),
+      height: ScreenUtil().setWidth(150),
       child: new Row(
         children: <Widget>[
           new InvestTabBar(
@@ -278,7 +263,7 @@ class InvestTabComponent extends StatelessWidget implements PixelCompactMixin{
   }
 }
 
-class InvestTabBar extends StatelessWidget implements PixelCompactMixin{
+class InvestTabBar extends StatelessWidget {
   final Function onTap;
   final String text;
   final IconData icon;
@@ -286,20 +271,13 @@ class InvestTabBar extends StatelessWidget implements PixelCompactMixin{
   InvestTabBar(this.text, this.icon, this.onTap);
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Expanded(
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             new CircleAvatar(
-              radius: getWidth(45.0, winWidth),
+              radius: ScreenUtil().setWidth(45),
               backgroundColor: primaryColor,
               child: new IconButton(
                   icon: new Icon(icon, color: Colors.white,),
@@ -307,12 +285,12 @@ class InvestTabBar extends StatelessWidget implements PixelCompactMixin{
               ),
             ),
             new Padding(
-              padding: EdgeInsets.only(top: getWidth(10.0, winWidth)),
+              padding: EdgeInsets.only(top: ScreenUtil().setWidth(10)),
               child: new Text(text,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: new TextStyle(
-                  fontSize: getWidth(20.0, winWidth)
+                  fontSize: ScreenUtil().setWidth(20)
                 ),
               ),
             ),
@@ -324,22 +302,15 @@ class InvestTabBar extends StatelessWidget implements PixelCompactMixin{
 
 
 
-class ProductComponent extends StatelessWidget implements PixelCompactMixin{
+class ProductComponent extends StatelessWidget {
   final ProductItem product;
 
   ProductComponent(this.product);
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     TextStyle _assFontStyle = new TextStyle(
-      fontSize: getWidth(16.0, winWidth),
+      fontSize: ScreenUtil().setWidth(16),
       color: assistFontColor
     );
 
@@ -358,19 +329,19 @@ class ProductComponent extends StatelessWidget implements PixelCompactMixin{
         border: new Border(bottom: new BorderSide(color: splitColor))
       ),
       padding: EdgeInsets.symmetric(
-        horizontal: getWidth(30.0, winWidth),
-        vertical: getWidth(20.0, winWidth)
+        horizontal: ScreenUtil().setWidth(30),
+        vertical: ScreenUtil().setWidth(20)
       ),
       child: new Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           new Container(
-            height: getWidth(80.0, winWidth),
-            width: getWidth(80.0, winWidth),
+            height: ScreenUtil().setWidth(80),
+            width: ScreenUtil().setWidth(80),
             color: Color(0xFFed9e00),
-            child: new Icon(_iconData, color: emptyColor, size: getWidth(40.0, winWidth),),
+            child: new Icon(_iconData, color: emptyColor, size: ScreenUtil().setWidth(40),),
           ),
-          new Padding(padding: EdgeInsets.only(left: getWidth(40.0, winWidth))),
+          new Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(40))),
           new Expanded(
             child: new Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -381,14 +352,14 @@ class ProductComponent extends StatelessWidget implements PixelCompactMixin{
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: new TextStyle(
-                      fontSize: getWidth(22.0, winWidth),
+                      fontSize: ScreenUtil().setWidth(22),
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                       height: 0.85,
                     ),
                   ),
                   width: double.infinity,
-                  height: getWidth(56.0, winWidth),
+                  height: ScreenUtil().setWidth(56),
                 ),
                 new Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

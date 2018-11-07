@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../constant/sizes.dart';
-import '../helper/pixelCompact.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 class PendingOverlay extends StatefulWidget {
@@ -14,7 +13,7 @@ class PendingOverlay extends StatefulWidget {
   State<StatefulWidget> createState() => new PendingOverlayState();
 }
 
-class PendingOverlayState extends State<PendingOverlay> with SingleTickerProviderStateMixin, PixelCompactMixin {
+class PendingOverlayState extends State<PendingOverlay> with SingleTickerProviderStateMixin {
   AnimationController _controller;
   Animation<double> _animation;
 
@@ -43,12 +42,7 @@ class PendingOverlayState extends State<PendingOverlay> with SingleTickerProvide
   }
 
   @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Material(
       color: Colors.transparent,
       child: new InkWell(
@@ -61,14 +55,14 @@ class PendingOverlayState extends State<PendingOverlay> with SingleTickerProvide
               decoration: new BoxDecoration(
                 color: Colors.black54,
                 borderRadius: new BorderRadius.all(
-                    new Radius.circular(getWidth(16.0, winWidth))
+                    new Radius.circular(ScreenUtil().setWidth(16))
                 ),
               ),
               padding: EdgeInsets.symmetric(
-                vertical: getWidth(50.0, winWidth),
+                vertical: ScreenUtil().setWidth(50),
               ),
-              width: getWidth(250.0, winWidth),
-              height: getWidth(255.0, winWidth),
+              width: ScreenUtil().setWidth(250),
+              height: ScreenUtil().setWidth(255),
               child: new Column(
                 children: <Widget>[
                   new Text(
@@ -78,17 +72,17 @@ class PendingOverlayState extends State<PendingOverlay> with SingleTickerProvide
                       style:
                       new TextStyle(
                           color: Colors.white,
-                          fontSize: getWidth(28.0, winWidth)
+                          fontSize: ScreenUtil().setWidth(28)
                       )
                   ),
-                  new Padding(padding: EdgeInsets.only(top: getWidth(30.0, winWidth))),
+                  new Padding(padding: EdgeInsets.only(top: ScreenUtil().setWidth(30))),
                   new Container(
                     child: new Transform.rotate(
                       angle: - _animation.value * 2 * pi,
                       child: new Icon(
                         Icons.loop,
                         color: Colors.grey,
-                        size: getWidth(90.0, winWidth),
+                        size: ScreenUtil().setWidth(90),
                       ),
                     ),
                   )

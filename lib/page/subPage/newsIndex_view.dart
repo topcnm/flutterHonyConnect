@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
 import '../../constant/colors.dart';
-import '../../constant/sizes.dart';
 import '../../constant/http.dart';
-import '../../helper/pixelCompact.dart';
 import '../../ui/carousel.dart';
 
 import '../../model/appState.dart';
@@ -40,7 +38,7 @@ class NewsIndexPageWidget extends StatefulWidget {
   _NewsIndexPageStateWidget createState() => _NewsIndexPageStateWidget();
 }
 
-class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements PixelCompactMixin{
+class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> {
   ScrollController controller;
 
   List images = [];
@@ -139,14 +137,7 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
     });
   }
 
-  @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
   Widget rowBuilder(i) {
-    double winWidth = MediaQuery.of(context).size.width;
     if (i == 0) {
       List _images = images.map((item) {
         return new PictureItem(
@@ -158,10 +149,10 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> implements Pi
 
       return new Container(
         width: double.infinity,
-        height: getWidth(300.0, winWidth),
+        height: ScreenUtil().setWidth(300),
         child: new HonyCarousel(
-          dotSize: getWidth(8.0, winWidth),
-          dotSpacing: getWidth(25.0, winWidth),
+          dotSize: ScreenUtil().setWidth(8),
+          dotSpacing: ScreenUtil().setWidth(25),
           boxFit: BoxFit.fill,
           animationDuration: new Duration(milliseconds: 600),
           animationCurve: Curves.easeOut,
@@ -252,24 +243,18 @@ class NewsComponent extends StatefulWidget {
   _NewsComponentState createState() => _NewsComponentState();
 }
 
-class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
+class _NewsComponentState extends State<NewsComponent> {
 
-  @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
 
   @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new InkWell(
       onTap: widget.onTap,
       child: new Container(
-        height: getWidth(202.0, winWidth),
+        height: ScreenUtil().setWidth(202),
         padding: EdgeInsets.symmetric(
-            vertical: getWidth(20.0, winWidth),
-          horizontal: getWidth(30.0, winWidth)
+            vertical: ScreenUtil().setWidth(20),
+          horizontal: ScreenUtil().setWidth(30)
         ),
         decoration: new BoxDecoration(
           color: emptyColor
@@ -279,8 +264,8 @@ class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
           children: <Widget>[
             new Expanded(
                 child: new Container(
-                  padding: EdgeInsets.only(right: getWidth(20.0, winWidth)),
-                  height: getWidth(150.0, winWidth),
+                  padding: EdgeInsets.only(right: ScreenUtil().setWidth(20)),
+                  height: ScreenUtil().setWidth(150),
                   child:new Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,7 +277,7 @@ class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
                         overflow: TextOverflow.ellipsis,
                         maxLines: 3,
                         style: new TextStyle(
-                          fontSize: getWidth(30.0, winWidth),
+                          fontSize: ScreenUtil().setWidth(30),
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -308,8 +293,8 @@ class _NewsComponentState extends State<NewsComponent> with PixelCompactMixin{
                 )
             ),
             new Container(
-              height: getWidth(150.0, winWidth),
-              width: getWidth(236.0, winWidth),
+              height: ScreenUtil().setWidth(150),
+              width: ScreenUtil().setWidth(236),
               decoration: new BoxDecoration(
                 image: new DecorationImage(
                   image: new AssetImage('lib/images/picholder.png'),

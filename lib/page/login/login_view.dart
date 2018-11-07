@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
-import '../../constant/sizes.dart';
-import '../../helper/pixelCompact.dart';
 import '../../ui/combineIconInput.dart';
 import '../../ui/extendButton.dart';
 import '../../ui/pendingOverlay.dart';
@@ -50,7 +49,7 @@ class LoginPageWidget extends StatefulWidget {
   _LoginPageWidgetState createState() => new _LoginPageWidgetState();
 }
 
-class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixin{
+class _LoginPageWidgetState extends State<LoginPageWidget> {
   String username = '';
   String password = '';
   final grantType = 'password';
@@ -73,10 +72,9 @@ class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixi
     hideKeyboard();
     widget.stateObj['onClickLogin'](username, password, (bool isSuccess){
       if (!isSuccess) {
-        return showConnectToast(widget.stateObj['userState'].errorMsg);
+        return showErrorToast(widget.stateObj['userState'].errorMsg);
       }
 
-//      Navigator.of(context).pushNamed('/main');
       Navigator.of(context).pushAndRemoveUntil(
           new MaterialPageRoute(builder: (BuildContext context) => new HomePage()),
               (Route route) => route == null);
@@ -88,13 +86,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixi
   }
 
   @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Scaffold(
       body: new GestureDetector(
         onTap: hideKeyboard,
@@ -108,11 +100,9 @@ class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixi
             new ListView(
               children: <Widget>[
                 new Container(
-                  padding: EdgeInsets.fromLTRB(
-                      getWidth(135.0, winWidth),
-                      getWidth(190.0, winWidth),
-                      getWidth(135.0, winWidth),
-                      getWidth(190.0, winWidth)
+                  padding: EdgeInsets.symmetric(
+                    vertical: ScreenUtil().setWidth(190),
+                    horizontal: ScreenUtil().setWidth(135)
                   ),
                   child: new Image(
                     image: new AssetImage('lib/images/logo.png'),
@@ -121,7 +111,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixi
 
                 new Container(
                   padding: EdgeInsets.symmetric(
-                      horizontal: getWidth(95.0, winWidth)),
+                    horizontal: ScreenUtil().setWidth(95),
+                  ),
                   child: new Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
@@ -140,7 +131,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> with PixelCompactMixi
                           inputType: TextInputType.text
                       ),
                       new Padding(padding: EdgeInsets.only(
-                          top: getWidth(65.0, winWidth))
+                          top: ScreenUtil().setWidth(65))
                       ),
                       new ExtendButton(
                           "Login",

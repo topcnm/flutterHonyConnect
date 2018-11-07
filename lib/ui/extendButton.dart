@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../helper/pixelCompact.dart';
-import '../constant/sizes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 import '../constant/colors.dart';
 
-class ExtendButton extends StatelessWidget implements PixelCompactMixin{
+class ExtendButton extends StatelessWidget {
   final enabled;
   final String _text;
   final Function _onTap;
@@ -11,17 +11,11 @@ class ExtendButton extends StatelessWidget implements PixelCompactMixin{
   ExtendButton(this._text, this.enabled, this._onTap);
 
   @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new SizedBox(
       width: double.infinity,
       child: new RaisedButton(
-        padding: EdgeInsets.symmetric(vertical: getWidth(30.0, winWidth)),
+        padding: EdgeInsets.symmetric(vertical: ScreenUtil().setWidth(30)),
         color: primaryColor,
         highlightColor: pressColor,
         disabledColor: disabledColor,
@@ -29,7 +23,7 @@ class ExtendButton extends StatelessWidget implements PixelCompactMixin{
           _text,
           style: new TextStyle(
             color: Colors.white,
-            fontSize: getWidth(30.0, winWidth),
+            fontSize: ScreenUtil().setWidth(30),
           ),
         ),
         onPressed: enabled ? _onTap : null,

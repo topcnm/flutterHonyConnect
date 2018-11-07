@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
@@ -10,9 +11,7 @@ import './logout_action.dart';
 import '../../ui/toast.dart';
 import '../../ui/extendButton.dart';
 
-import '../../constant/sizes.dart';
 import '../../constant/colors.dart';
-import '../../helper/pixelCompact.dart';
 
 class SettingPage extends StatelessWidget {
   @override
@@ -44,12 +43,12 @@ class SettingPageWidget extends StatefulWidget {
   _SettingPageWidgetState createState() => _SettingPageWidgetState();
 }
 
-class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompactMixin{
+class _SettingPageWidgetState extends State<SettingPageWidget> {
 
   void handleLogout() {
     widget.storeObj['onClickLogout']((bool isSuccess) {
       if (!isSuccess) {
-        return showConnectToast("登出失败，不知道什么原因");
+        return showErrorToast("登出失败，不知道什么原因");
       }
 
       Navigator.of(context).pushNamed('/login');
@@ -58,9 +57,8 @@ class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompact
 
   void showLanguageModal(context) {
     showModalBottomSheet<void>(context: context, builder: (BuildContext ctx) {
-      double winWidth = MediaQuery.of(context).size.width;
       return new Container(
-        height: getWidth(300.0, winWidth),
+        height: ScreenUtil().setWidth(300),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -81,7 +79,7 @@ class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompact
       onTap: () {
         widget.storeObj['onClickSwitchLanguage'](lg, (bool isSuccess) {
           if(!isSuccess) {
-            return showConnectToast("切换语言失败，请稍后再试");
+            return showErrorToast("切换语言失败，请稍后再试");
           }
 
           Navigator.of(context).pop();
@@ -91,13 +89,7 @@ class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompact
   }
 
   @override
-  double getWidth(double num, double winWidth) {
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('Setting'),
@@ -105,8 +97,8 @@ class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompact
       ),
       body: new Container(
         padding: new EdgeInsets.symmetric(
-            vertical: getWidth(20.0, winWidth),
-          horizontal: getWidth(30.0, winWidth)
+            vertical: ScreenUtil().setWidth(20),
+          horizontal: ScreenUtil().setWidth(30)
         ),
         child: new ListView(
           children: <Widget>[
@@ -125,7 +117,7 @@ class _SettingPageWidgetState extends State<SettingPageWidget> with PixelCompact
               },
             ),
             new Divider(color: splitColor,),
-            new Padding(padding: EdgeInsets.only(top: getWidth(40.0, winWidth))),
+            new Padding(padding: EdgeInsets.only(top: ScreenUtil().setWidth(40))),
             new ExtendButton(
                 "Logout",
                 true,

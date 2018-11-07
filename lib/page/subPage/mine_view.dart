@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
 import '../../constant/colors.dart';
-import '../../constant/sizes.dart';
 import '../../constant/http.dart';
-import '../../helper/pixelCompact.dart';
 
 import '../../model/appState.dart';
 import '../../model/user.dart';
@@ -33,7 +32,7 @@ class MinePageWidget extends StatefulWidget {
   _MinePageWidgetState createState() => _MinePageWidgetState();
 }
 
-class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
+class _MinePageWidgetState extends State<MinePageWidget> {
 
   @override
   void initState() {
@@ -43,17 +42,10 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
   }
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     TextStyle myStyle = new TextStyle(
       color: emptyColor,
-      fontSize: getWidth(24.0, winWidth),
+      fontSize: ScreenUtil().setWidth(24),
     );
     return new Scaffold(
       appBar: new AppBar(
@@ -77,7 +69,7 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
         child: new ListView(
           children: <Widget>[
             new Container(
-              height: getWidth(345.0, winWidth),
+              height: ScreenUtil().setWidth(345),
               decoration: new BoxDecoration(
                 color: primaryColor,
                 image: new DecorationImage(
@@ -89,17 +81,17 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  new Padding(padding: EdgeInsets.only(top: getWidth(50.0, winWidth))),
+                  new Padding(padding: EdgeInsets.only(top: ScreenUtil().setWidth(50))),
                   new Container(
-                    height: getWidth(120.0, winWidth),
-                    width: getWidth(120.0, winWidth),
-                    padding: const EdgeInsets.all(2.0),
+                    height: ScreenUtil().setWidth(120),
+                    width: ScreenUtil().setWidth(120),
+                    padding: EdgeInsets.all(ScreenUtil().setWidth(2)),
                     decoration: new BoxDecoration(
                       color: emptyColor,
                       shape: BoxShape.circle,
                     ),
                     child: new CircleAvatar(
-                        radius: getWidth(58.0, winWidth),
+                        radius: ScreenUtil().setWidth(58),
                         backgroundColor: primaryColor,
                         backgroundImage: widget.user.photoUrl != null ?
                           new NetworkImage('$urlHost/nd/image/${widget.user.photoUrl}')
@@ -108,18 +100,18 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
                     ),
                   ),
 
-                  new Padding(padding: EdgeInsets.only(top: getWidth(20.0, winWidth))),
+                  new Padding(padding: EdgeInsets.only(top: ScreenUtil().setWidth(20))),
                   new Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       new Text(widget.user.position, style: myStyle,),
-                      new Divider(indent: getWidth(20.0, winWidth), color: emptyColor,),
+                      new Divider(indent: ScreenUtil().setWidth(20), color: emptyColor,),
                       new Text(widget.user.mobile, style: myStyle,)
                     ],
                   ),
-                  new Padding(padding: EdgeInsets.only(top: getWidth(20.0, winWidth))),
+                  new Padding(padding: EdgeInsets.only(top: ScreenUtil().setWidth(20))),
                   new Text(widget.user.name, style: new TextStyle(
-                    fontSize: getWidth(30.0, winWidth),
+                    fontSize: ScreenUtil().setWidth(30),
                     fontWeight: FontWeight.bold,
                     color: emptyColor
                   ),)
@@ -127,7 +119,7 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
               ),
             ),
             new Container(
-              padding: EdgeInsets.symmetric(horizontal: getWidth(20.0, winWidth)),
+              padding: EdgeInsets.symmetric(horizontal: ScreenUtil().setWidth(20)),
               child: new Column(
                 children: <Widget>[
                   new MineMenuItem(Icons.font_download, 'Risk Assessment', (){}),
@@ -154,7 +146,7 @@ class _MinePageWidgetState extends State<MinePageWidget> with PixelCompactMixin{
   }
 }
 
-class MineMenuItem extends StatelessWidget implements PixelCompactMixin{
+class MineMenuItem extends StatelessWidget {
   final IconData _icon;
   final String _text;
   final VoidCallback _onTap;
@@ -162,21 +154,14 @@ class MineMenuItem extends StatelessWidget implements PixelCompactMixin{
   MineMenuItem(this._icon, this._text, this._onTap);
 
   @override
-  double getWidth(double num, double winWidth) {
-    // TODO: implement getWidth
-    return winWidth * num / standardWidth;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double winWidth = MediaQuery.of(context).size.width;
     return new ListTile(
       leading: new Icon(_icon, color: primaryColor,),
       contentPadding: EdgeInsets.only(left: 10.0),
       title: new Text(
         _text,
         style: new TextStyle(
-          fontSize: getWidth(27.0, winWidth)
+          fontSize: ScreenUtil().setWidth(27)
         ),
       ),
       trailing: new Icon(Icons.chevron_right, color: primaryColor,),
