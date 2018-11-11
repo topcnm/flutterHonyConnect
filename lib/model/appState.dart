@@ -12,7 +12,7 @@ class AppState {
   /// 可以在后面继续增加多个子state, 以管理其他模块
   LoginUser loginUser;
 
-  /// 语言
+  /// 【第八步】在根state里，设置语言属性，以方便redux调用
   Locale locale;
 
   ///

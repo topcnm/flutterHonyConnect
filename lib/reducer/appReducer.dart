@@ -7,6 +7,8 @@ AppState appReducer(AppState state, action) {
   /// 可以在下面增加更多映射
   return AppState(
     loginUser: userStateReducer(state.loginUser, action),
+
+    /// 【第七步】在总reducer中，注册好关于语言库的子reducer
     locale: LocaleReducer(state.locale, action),
   );
 }

@@ -78,6 +78,7 @@ final Function userSwitchLanguageActionCreator = ({ Language newLanguage, Functi
     }
 
     store.dispatch(ChangeLocaleAction(locale));
+    /// 【第九步】异步请求后端 国家化语言的切换
     store.dispatch(UserSwitchLanguage(newLanguage));
     return callback(true);
   };
