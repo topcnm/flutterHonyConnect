@@ -17,6 +17,7 @@ import '../model/appState.dart';
 import '../model/user.dart';
 
 import '../helper/HttpUtils.dart';
+import '../helper/localeUtils.dart';
 
 //import '../ui/toast.dart';
 class NewsDetail extends StatelessWidget {
@@ -204,7 +205,7 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> {
     return new Scaffold(
       key: _scaffoldKey,
       appBar: new AppBar(
-        title: new Text('资讯详情'),
+        title: new Text(LocaleUtils.getLocale(context).newsDetailTitle),
         centerTitle: true,
         actions: <Widget>[
           new IconButton(

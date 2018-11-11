@@ -13,6 +13,8 @@ import './login_action.dart';
 
 import '../home_view.dart';
 
+import '../../helper/localeUtils.dart';
+
 class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -134,7 +136,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                           top: ScreenUtil().setWidth(65))
                       ),
                       new ExtendButton(
-                          "Login",
+                          LocaleUtils.getLocale(context).loginButtonText,
                           !widget.stateObj["userState"].isLoading,
                           handleLogin
                       ),

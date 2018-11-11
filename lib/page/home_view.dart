@@ -6,6 +6,7 @@ import '../constant/colors.dart';
 import './subPage/mine_view.dart';
 import './subPage/newsIndex_view.dart';
 import './subPage/investIndex_view.dart';
+import '../helper/localeUtils.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -62,10 +63,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 borderSide: new BorderSide(width: 0.0),
               ),
               tabs: <Widget>[
-                new CustomTabItem(_activeIndex == 0, IconData(0xe86e, fontFamily: 'aliFont'), "News"),
-                new CustomTabItem(_activeIndex == 1, IconData(0xe67d, fontFamily: 'aliFont'), "Invest"),
+                new CustomTabItem(_activeIndex == 0, IconData(0xe86e, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).newsIndexTitle),
+                new CustomTabItem(_activeIndex == 1, IconData(0xe67d, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).investIndexTitle),
 //                new CustomTabItem(_activeIndex == 2, IconData(0xe62c, fontFamily: 'aliFont'), "Asset"),
-                new CustomTabItem(_activeIndex == 2, IconData(0xe6b6, fontFamily: 'aliFont'), "Mine"),
+                new CustomTabItem(_activeIndex == 2, IconData(0xe6b6, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).mineTitle),
               ]
             )
         ),
@@ -103,7 +104,7 @@ class CustomTabItem extends StatelessWidget {
           ),
           new Padding(
               padding: EdgeInsets.only(
-                  top: ScreenUtil().setWidth(10)
+                  top: ScreenUtil().setWidth(2)
               )
           ),
           new Text(
@@ -111,7 +112,8 @@ class CustomTabItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             style: new TextStyle(
-              fontSize: ScreenUtil().setWidth(26),
+              fontSize: ScreenUtil().setWidth(22),
+              height: 0.9
             ),
           )
         ],

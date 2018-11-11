@@ -18,4 +18,15 @@ class NewsItem {
     this.cntntFlg = false,
     this.webLink = '',
   });
+
+  factory NewsItem.fromJson(Map<String, dynamic> json) {
+    return new NewsItem(
+        cntntFlg: json['cntntFlg'],
+        cntntId: json['cntntId'],
+        topic: json['topic'],
+        focusImgUrl: json['focusImgUrl'],
+        webLink: json['webLink'] != null ? json['webLink']: "https://www.baidu.com",
+        rlsTime: json['rlsTime'] != null ? json['rlsTime'].split("T")[0] : ""
+    );
+  }
 }

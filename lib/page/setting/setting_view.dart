@@ -13,6 +13,8 @@ import '../../ui/extendButton.dart';
 
 import '../../constant/colors.dart';
 
+import '../../helper/localeUtils.dart';
+
 class SettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -62,9 +64,9 @@ class _SettingPageWidgetState extends State<SettingPageWidget> {
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            renderLanguageItem(widget.storeObj["userState"].locale == Language.en, 'English', Language.en),
+            renderLanguageItem(widget.storeObj["userState"].locale == Language.en, LocaleUtils.getLocale(context).settingEnglish, Language.en),
             new Divider(color: splitColor,),
-            renderLanguageItem(widget.storeObj["userState"].locale == Language.zh, 'Chinese', Language.zh),
+            renderLanguageItem(widget.storeObj["userState"].locale == Language.zh, LocaleUtils.getLocale(context).settingChinese, Language.zh),
           ],
         ),
       );
@@ -92,7 +94,8 @@ class _SettingPageWidgetState extends State<SettingPageWidget> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Setting'),
+        /// 【第六步】在页面代码中调用工具方法
+        title: new Text(LocaleUtils.getLocale(context).settingTitle),
         centerTitle: true,
       ),
       body: new Container(
@@ -104,13 +107,13 @@ class _SettingPageWidgetState extends State<SettingPageWidget> {
           children: <Widget>[
             new ListTile(
               leading: new Icon(Icons.store),
-              title: new Text('Version'),
+              title: new Text(LocaleUtils.getLocale(context).settingVersion),
               trailing: new Text('2.0'),
             ),
             new Divider(color: splitColor,),
             new ListTile(
               leading: new Icon(Icons.language),
-              title: new Text('Language Setting'),
+              title: new Text(LocaleUtils.getLocale(context).settingLanguage),
               trailing: new Icon(Icons.chevron_right, color: primaryColor,),
               onTap: () {
                 showLanguageModal(context);
@@ -119,7 +122,7 @@ class _SettingPageWidgetState extends State<SettingPageWidget> {
             new Divider(color: splitColor,),
             new Padding(padding: EdgeInsets.only(top: ScreenUtil().setWidth(40))),
             new ExtendButton(
-                "Logout",
+                LocaleUtils.getLocale(context).settingLogout,
                 true,
                 handleLogout
             ),

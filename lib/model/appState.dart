@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
 import './user.dart';
 
 class AppState {
   static var empty = AppState(
-      loginUser: new LoginUser()
+    loginUser: new LoginUser(),
+    locale: new Locale('zh')
   );
 
   /// 这是一个总的state, 但是未关联reducer
@@ -10,7 +12,12 @@ class AppState {
   /// 可以在后面继续增加多个子state, 以管理其他模块
   LoginUser loginUser;
 
+  /// 语言
+  Locale locale;
+
+  ///
   AppState({
     this.loginUser,
+    this.locale,
   });
 }

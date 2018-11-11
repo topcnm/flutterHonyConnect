@@ -170,28 +170,7 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> {
       return new InvestTabComponent();
     }
 
-    var item = products[i - 2];
-
-    var _productType;
-
-    if (item['productType'] == "PRODTP_RE") {
-      _productType = ProductType.PRODTP_RE;
-    } else if (item['productType'] == "PRODTP_PE") {
-      _productType = ProductType.PRODTP_PE;
-    } else if (item['productType'] == "PRODTP_HF") {
-      _productType = ProductType.PRODTP_HF;
-    } else {
-      _productType = ProductType.PRODTP_PI;
-    }
-
-    ProductItem _product = new ProductItem(
-      cntntId: item['cntntId'],
-      productId: item['productId'],
-      topic: item['topic'],
-      productType: _productType,
-      rlsTime: item['rlsTime'] == null ? "" : item['rlsTime'],
-      keyWord: item['keyWord'],
-    );
+    ProductItem _product = ProductItem.fromJson(products[i - 2]);
 
     return new ProductComponent(_product);
   }

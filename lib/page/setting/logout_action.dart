@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import '../../model/appState.dart';
 import '../../model/user.dart';
 import '../../constant/http.dart';
@@ -8,6 +9,7 @@ import '../login/login_action.dart';
 import 'package:http/http.dart' as http;
 import 'package:redux/redux.dart';
 
+import '../language/language-redux.dart';
 
 class UserLogoutAction {}
 
@@ -66,6 +68,16 @@ final Function userSwitchLanguageActionCreator = ({ Language newLanguage, Functi
       return callback(false);
     }
 
+    Locale locale;
+
+    if (newLanguage == Language.en) {
+      locale = Locale('en');
+    }
+    if (newLanguage == Language.zh) {
+      locale = Locale('zh');
+    }
+
+    store.dispatch(ChangeLocaleAction(locale));
     store.dispatch(UserSwitchLanguage(newLanguage));
     return callback(true);
   };

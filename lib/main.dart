@@ -1,3 +1,8 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import './locale/honyLocalizationDelegate.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // 防止显示切换方向
 import 'package:flutter_redux/flutter_redux.dart';
@@ -34,19 +39,35 @@ class MyReduxApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return new StoreProvider(
       store: store,
-      child: new MaterialApp(
-        title: 'Flutter Demo',
-        theme: new ThemeData(
-          primaryColor: primaryColor,
-        ),
-        home: new Welcome(),
-        routes: <String, WidgetBuilder> {
-//          '/': (BuildContext context) => new Welcome(),
-          '/main': (BuildContext context) => new HomePage(),
-          '/login': (BuildContext context) => new LoginPage(),
-          '/setting': (BuildContext context) => new SettingPage(),
-          '/personal': (BuildContext context) => new PersonalPage(),
-        },
+        /// 【第四部】引入 flutter_localizations
+        /// 1，引入国际化delegate代理
+        /// 2，将原本的MaterialApp 用StoreBuilder包裹一层，否则无法实现实时切换，只能刷新切换；
+        /// 3，为MaterialApp设置locale、supportedLocales等属性
+      child: new StoreBuilder<AppState>(
+        builder: (context, store) {
+          return new MaterialApp(
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              HonyLocalizationDelegate.delegate
+            ],
+            locale: store.state.locale,
+            supportedLocales: [store.state.locale],
+
+            title: 'Flutter Demo',
+            theme: new ThemeData(
+              primaryColor: primaryColor,
+            ),
+            home: new Welcome(),
+            routes: <String, WidgetBuilder> {
+    //          '/': (BuildContext context) => new Welcome(),
+              '/main': (BuildContext context) => new HomePage(),
+              '/login': (BuildContext context) => new LoginPage(),
+              '/setting': (BuildContext context) => new SettingPage(),
+              '/personal': (BuildContext context) => new PersonalPage(),
+            },
+          );
+        }
       )
     );
   }

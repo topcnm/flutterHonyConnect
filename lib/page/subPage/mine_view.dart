@@ -8,6 +8,7 @@ import '../../constant/http.dart';
 
 import '../../model/appState.dart';
 import '../../model/user.dart';
+import '../../helper/localeUtils.dart';
 
 ///AutomaticKeepAliveClientMixin not work still bug
 /// _debugUltimatePreviousSiblingOf(after, equals: _firstChild) is not true. #11895
@@ -49,7 +50,7 @@ class _MinePageWidgetState extends State<MinePageWidget> {
     );
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('Mine Page'),
+        title: new Text(LocaleUtils.getLocale(context).mineTitle),
         centerTitle: true,
         leading: new IconButton(
           icon: new Icon(Icons.settings),

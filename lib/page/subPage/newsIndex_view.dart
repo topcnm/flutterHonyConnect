@@ -16,6 +16,7 @@ import '../newsDetail_view.dart';
 import '../webLink_view.dart';
 
 import '../../helper/HttpUtils.dart';
+import '../../helper/localeUtils.dart';
 
 class NewsIndexPage extends StatelessWidget {
   @override
@@ -169,15 +170,7 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> {
       );
     }
 
-    var item = news[i - 1];
-    NewsItem _item = new NewsItem(
-        cntntFlg: item['cntntFlg'],
-        webLink: item['webLink'] != null ? item['webLink']: "https://www.baidu.com",
-        cntntId: item['cntntId'],
-        topic: item['topic'],
-        focusImgUrl: item['focusImgUrl'],
-        rlsTime: item['rlsTime'] != null ? item['rlsTime'].split("T")[0] : ""
-    );
+    NewsItem _item = NewsItem.fromJson(news[i - 1]);
     return new NewsComponent(
       newsInfo: _item,
       onTap: () {
@@ -203,7 +196,7 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text('News'),
+        title: new Text(LocaleUtils.getLocale(context).newsIndexTitle),
         centerTitle: true,
         actions: <Widget>[
           new IconButton(
