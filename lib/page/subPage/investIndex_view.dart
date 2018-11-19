@@ -178,10 +178,6 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("Investment"),
-        centerTitle: true,
-      ),
       body: products.length == 0 && isLoading ? new Center(
           child: new CircularProgressIndicator(),
         )

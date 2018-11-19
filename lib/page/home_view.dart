@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import '../model/appState.dart';
+import '../model/user.dart';
 
 import '../constant/colors.dart';
+import '../constant/http.dart';
 
-import './subPage/mine_view.dart';
 import './subPage/newsIndex_view.dart';
 import './subPage/investIndex_view.dart';
 import '../helper/localeUtils.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  Widget build(BuildContext context) {
+    return new StoreBuilder<AppState>(
+      builder: (context, store) => new HomePageWidget(store.state.loginUser),
+    );
+  }
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+
+class HomePageWidget extends StatefulWidget {
+  final LoginUser user;
+
+  HomePageWidget(this.user);
+
+  @override
+  _HomePageWidgetState createState() => _HomePageWidgetState();
+}
+
+class _HomePageWidgetState extends State<HomePageWidget> with SingleTickerProviderStateMixin {
   TabController _tc;
   int _activeIndex = 0;
   VoidCallback onTabChanged;
@@ -24,7 +41,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.initState();
     _tc = new TabController(
         initialIndex: _activeIndex,
-        length: 3,
+        length: 2,
         vsync: this
     );
     onTabChanged = (){
@@ -43,16 +60,63 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.dispose();
   }
 
+  String getTitle(int i) {
+    switch(i) {
+      case 0: return LocaleUtils.getLocale(context).newsIndexTitle;
+      case 1: return LocaleUtils.getLocale(context).investIndexTitle;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    String pageTitle = getTitle(_activeIndex);
+
     return new GestureDetector(
       child: new Scaffold(
+        appBar: new AppBar(
+          title: new Text(pageTitle),
+        ),
+        drawer: new Drawer(
+          child: new ListView(
+            children: <Widget>[
+              new UserAccountsDrawerHeader(
+                decoration: new BoxDecoration(
+                  image: new DecorationImage(
+                    image: new AssetImage('lib/images/bg.jpg'),
+                    fit: BoxFit.cover,
+                  )
+                ),
+                accountName: new Text(widget.user.username),
+                accountEmail: new Text(widget.user.mail),
+                currentAccountPicture: new CircleAvatar(
+                  backgroundImage: widget.user.photoUrl != null ?
+                          new NetworkImage('$urlHost/nd/image/${widget.user.photoUrl}')
+                          :
+                          new AssetImage('lib/images/fakehony.jpg')
+                ),
+              ),
+              new ListTile(
+                leading: new Icon(Icons.settings),
+                title: new Text('My Setting'),
+                trailing: new Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).pushNamed('/setting'),
+              ),
+              new Divider(),
+              new ListTile(
+                leading: new Icon(Icons.person),
+                title: new Text('My Personal'),
+                trailing: new Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).pushNamed("/personal"),
+              )
+            ],
+          ),
+        ),
         body: new IndexedStack(
           index: _activeIndex,
           children: [
             new NewsIndexPage(),
             new InvestIndexPage(),
-            new MinePage(),
+            // new MinePage(),
           ]
         ),
         bottomNavigationBar: new Material(
@@ -66,7 +130,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 new CustomTabItem(_activeIndex == 0, IconData(0xe86e, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).newsIndexTitle),
                 new CustomTabItem(_activeIndex == 1, IconData(0xe67d, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).investIndexTitle),
 //                new CustomTabItem(_activeIndex == 2, IconData(0xe62c, fontFamily: 'aliFont'), "Asset"),
-                new CustomTabItem(_activeIndex == 2, IconData(0xe6b6, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).mineTitle),
+                // new CustomTabItem(_activeIndex == 2, IconData(0xe6b6, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).mineTitle),
               ]
             )
         ),

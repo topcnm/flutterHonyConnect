@@ -195,16 +195,6 @@ class _NewsIndexPageStateWidget extends State<NewsIndexPageWidget> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(LocaleUtils.getLocale(context).newsIndexTitle),
-        centerTitle: true,
-        actions: <Widget>[
-          new IconButton(
-              icon: new Icon(IconData(0xe61e, fontFamily: 'aliFont'), color: emptyColor,),
-              onPressed: null
-          )
-        ],
-      ),
       body: news.length == 0 && isLoading ? new Center(
           child: new CircularProgressIndicator(),
         )
