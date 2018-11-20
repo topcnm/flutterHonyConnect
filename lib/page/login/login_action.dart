@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../model/user.dart';
 import '../../model/appState.dart';
 import '../../constant/http.dart';
@@ -27,33 +29,42 @@ class UserLoginFailAction {
   UserLoginFailAction(this.errorMsg);
 }
 
-final Function userLoginActionCreator = ({String username, String password, Function callback}) {
+final Function userLoginActionCreator = ({
+  String username, 
+  String password,
+  String accessToken,
+  String refreshToken, 
+  Function callback
+}) {
   return (Store<AppState> store) async {
-    // 1. 开始请求
-    store.dispatch(UserStartLoginAction());
-
-    // 2. 请求授权
-    http.Response authInfo = await fetchAuthActionCreator(
-        username: username,
-        password: password
-    );
-
-    // 3. 解析授权请求
-    Map<String, dynamic> authResData = jsonDecode(authInfo.body);
-
-    // 4. 授权失败
-    if (authResData['error'] != null) {
-      store.dispatch(UserFinishLoginAction());
-      store.dispatch(UserLoginFailAction(authResData['error_description']));
-      return callback(false);
+    var _accessToken, _refreshToken;
+    
+    if (accessToken == null) {  // 在值传入用户名时  
+      // 1. 开始请求
+      store.dispatch(UserStartLoginAction());
+      // 2. 请求授权
+      http.Response authInfo = await fetchAuthActionCreator(
+          username: username,
+          password: password
+      );
+      // 3. 解析授权请求
+      Map<String, dynamic> authResData = jsonDecode(authInfo.body);
+      // 4. 授权失败
+      if (authResData['error'] != null) {
+        store.dispatch(UserFinishLoginAction());
+        store.dispatch(UserLoginFailAction(authResData['error_description']));
+        return callback(false);
+      }
+      _accessToken = authResData['access_token'];
+      _refreshToken = authResData['refresh_token'];
+    } else { // 在值传入token时 
+      _accessToken = accessToken;
+      _refreshToken = refreshToken;
     }
 
-    String accessToken = authResData['access_token'];
-    String refreshToken = authResData['refresh_token'];
-
     http.Response userInfo = await fetchUserInfoActionCreator(
-        accessToken: accessToken,
-        refreshToken: refreshToken
+        accessToken: _accessToken,
+        refreshToken: _refreshToken
     );
 
     Map<String, dynamic> userResData = jsonDecode(userInfo.body);
@@ -68,8 +79,8 @@ final Function userLoginActionCreator = ({String username, String password, Func
       isLoading: false,
       errorMsg: '',
 
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken: _accessToken,
+      refreshToken: _refreshToken,
 
       userId: userResData['result']['userId'],
       userType: userResData['result']['userType'],
@@ -88,12 +99,18 @@ final Function userLoginActionCreator = ({String username, String password, Func
 
     store.dispatch(UserFinishLoginAction());
     store.dispatch(UserLoginSuccessAction(user));
+    recordTokenInfo(_accessToken, _refreshToken);
 
     callback(true);
     return null;
   };
 };
 
+final Function recordTokenInfo = (String accessToken, String refreshToken) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString('accessToken', accessToken);
+  prefs.setString('refreshToken', refreshToken);
+};
 
 final Function fetchAuthActionCreator = ({String username, String password}) async {
   http.Response authResponse = await http.post(

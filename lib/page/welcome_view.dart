@@ -1,19 +1,47 @@
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart'; // 手机基本尺寸设置
 
-import '../constant/colors.dart';
-import '../constant/sizes.dart';
-import '../helper/pixelCompact.dart';
-import './login/login_view.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
-class Welcome extends StatefulWidget {
+import '../model/appState.dart';
+import '../model/user.dart';
+
+import './login/login_view.dart';
+import './login/login_action.dart';
+import './home_view.dart';
+
+class Welcome extends StatelessWidget {
   @override
-  _WelcomeState createState() => new _WelcomeState();
+  Widget build(BuildContext context) {
+    return new StoreConnector(
+      converter: (Store<AppState> store) {
+        return (String accessToken, String refreshToken, Function callback) => store.dispatch(
+            userLoginActionCreator(
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+              callback: callback
+            )
+          );
+        },
+      builder: (BuildContext context, Function triggerLogin) => new WelcomeWidget(triggerLogin),
+    );
+  }
 }
 
-class _WelcomeState extends State<Welcome> with TickerProviderStateMixin{
+
+class WelcomeWidget extends StatefulWidget {
+  final Function triggerLogin;
+
+  WelcomeWidget(this.triggerLogin);
+  @override
+  _WelcomeWidgetState createState() => new _WelcomeWidgetState();
+}
+
+class _WelcomeWidgetState extends State<WelcomeWidget> with TickerProviderStateMixin{
   AnimationController controller;
   Animation<double> animation;
   var animationStateListener;
@@ -22,42 +50,52 @@ class _WelcomeState extends State<Welcome> with TickerProviderStateMixin{
   void initState() {
     // TODO: implement initState
     super.initState();
+ 
     controller = new AnimationController(vsync: this, duration: new Duration(seconds: 2));
     animation = new CurvedAnimation(parent: controller, curve: Curves.easeIn);
     animationStateListener = (status){
       if (status == AnimationStatus.completed) {
-        try{
-          Navigator.of(context).pushAndRemoveUntil(
+        getTokenInfo().then((tokenInfo) {
+          if (tokenInfo['accessToken'] == null) {
+            Navigator.of(context).pushAndRemoveUntil(
               new MaterialPageRoute(builder: (BuildContext context) => new LoginPage()),
-          (Route route) => route == null);
-        } catch(e) {
-          print('Leading page error');
-        }
+              (Route route) => route == null);
+          } else {
+            widget.triggerLogin(
+              tokenInfo['accessToken'],
+              tokenInfo['refreshToken'],
+              (bool isSuccess) => Navigator.of(context).pushAndRemoveUntil(
+                new MaterialPageRoute(builder: (BuildContext context) => new HomePage()),
+                (Route route) => route == null)
+            );
+          }
+        });
       }
     };
 
     animation.addStatusListener(animationStateListener);
     controller.forward();
-
-    return null;
-    new Timer(new Duration(milliseconds: 2000), () {
-      try{
-        Navigator.of(context).pushAndRemoveUntil(
-            new MaterialPageRoute(builder: (BuildContext context) => new LoginPage()),
-        (Route route) => route == null);
-      } catch(e) {
-        print('Leading page error');
-      }
-    });
   }
 
   @override
-    void dispose() {
-      // TODO: implement dispose
-      animation.removeStatusListener(animationStateListener);
-      controller.dispose();
-      super.dispose();
-    }
+  void dispose() {
+    // TODO: implement dispose
+    animation.removeStatusListener(animationStateListener);
+    controller.dispose();
+    super.dispose();
+  }
+
+  // Future
+  Future<Map<String, dynamic>> getTokenInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    dynamic accessToken = prefs.get('accessToken');
+    dynamic refreshToken = prefs.get('refreshToken');
+
+    return {
+      'accessToken': accessToken,
+      'refreshToken': refreshToken,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
