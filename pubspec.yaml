@@ -59,6 +59,7 @@ flutter:
     - lib/images/login.jpg
     - lib/images/fakehony.jpg
     - lib/images/picholder.png
+    - lib/images/welcome.jpg
     - lib/images/hony-placeholder.jpg
   #  - images/a_dot_ham.jpeg
 
