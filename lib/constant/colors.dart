@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const primaryColor = Color(0xFF23b128);
+const primaryColor = Color(0xFF1e52a1);
 const emptyColor = Color(0xFFffffff);
 const pressColor = Color(0xFF507ec4);
 const disabledColor = Color(0xFF898989);

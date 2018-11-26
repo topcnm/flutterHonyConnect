@@ -93,11 +93,14 @@ class _SettingPageWidgetState extends State<SettingPageWidget> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
+      appBar: new PreferredSize(
+        preferredSize: Size.fromHeight(ScreenUtil().setHeight(88)),
+        child: new AppBar(
         /// 【第六步】在页面代码中调用工具方法
-        title: new Text(LocaleUtils.getLocale(context).settingTitle),
+        title: new Text(LocaleUtils.getLocale(context).settingTitle, style: new TextStyle(fontSize: ScreenUtil().setSp(30))),
         centerTitle: true,
       ),
+      ) ,
       body: new Container(
         padding: new EdgeInsets.symmetric(
             vertical: ScreenUtil().setWidth(20),

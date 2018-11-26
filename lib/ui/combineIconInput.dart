@@ -80,8 +80,9 @@ class _CombineIconInputState extends State<CombineIconInput> {
           new Expanded(
             child: new TextField(
               style: new TextStyle(
-                fontSize: ScreenUtil().setWidth(30),
+                fontSize: ScreenUtil().setWidth(26),
                 color: mainFontColor,
+                height: 0.85,
               ),
               decoration: new InputDecoration(
                 border: InputBorder.none,

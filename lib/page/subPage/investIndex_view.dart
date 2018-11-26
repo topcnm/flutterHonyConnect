@@ -19,6 +19,8 @@ import '../../model/productItem.dart';
 
 import '../../helper/HttpUtils.dart';
 
+import '../productDetail/productDetail_view.dart';
+
 class InvestIndexPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -172,7 +174,14 @@ class _InvestIndexPageWidgetState extends State<InvestIndexPageWidget> {
 
     ProductItem _product = ProductItem.fromJson(products[i - 2]);
 
-    return new ProductComponent(_product);
+    return new ProductComponent(
+      _product,
+      () => Navigator.of(context).push(
+        new MaterialPageRoute(
+          builder: (BuildContext context) => new ProductDetail(_product.cntntId)
+        )
+      )  
+    );
   }
 
   @override
@@ -279,8 +288,9 @@ class InvestTabBar extends StatelessWidget {
 
 class ProductComponent extends StatelessWidget {
   final ProductItem product;
+  final Function onTap;
 
-  ProductComponent(this.product);
+  ProductComponent(this.product, this.onTap);
 
   @override
   Widget build(BuildContext context) {
@@ -299,55 +309,58 @@ class ProductComponent extends StatelessWidget {
       _iconData = IconData(0xe67e, fontFamily: 'aliFont');
     }
 
-    return new Container(
-      decoration: new BoxDecoration(
-        border: new Border(bottom: new BorderSide(color: splitColor))
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: ScreenUtil().setWidth(30),
-        vertical: ScreenUtil().setWidth(20)
-      ),
-      child: new Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          new Container(
-            height: ScreenUtil().setWidth(80),
-            width: ScreenUtil().setWidth(80),
-            color: Color(0xFFed9e00),
-            child: new Icon(_iconData, color: emptyColor, size: ScreenUtil().setWidth(40),),
-          ),
-          new Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(40))),
-          new Expanded(
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                new Container(
-                  child: new Text(product.topic,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: new TextStyle(
-                      fontSize: ScreenUtil().setWidth(22),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      height: 0.85,
+    return new InkWell(
+      onTap: onTap,
+      child: new Container(
+        decoration: new BoxDecoration(
+          border: new Border(bottom: new BorderSide(color: splitColor))
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: ScreenUtil().setWidth(30),
+          vertical: ScreenUtil().setWidth(20)
+        ),
+        child: new Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            new Container(
+              height: ScreenUtil().setWidth(80),
+              width: ScreenUtil().setWidth(80),
+              color: Color(0xFFed9e00),
+              child: new Icon(_iconData, color: emptyColor, size: ScreenUtil().setWidth(40),),
+            ),
+            new Padding(padding: EdgeInsets.only(left: ScreenUtil().setWidth(40))),
+            new Expanded(
+              child: new Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  new Container(
+                    child: new Text(product.topic,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: new TextStyle(
+                        fontSize: ScreenUtil().setWidth(22),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        height: 0.85,
+                      ),
                     ),
+                    width: double.infinity,
+                    height: ScreenUtil().setWidth(56),
                   ),
-                  width: double.infinity,
-                  height: ScreenUtil().setWidth(56),
-                ),
-                new Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    new Text(product.keyWord, style: _assFontStyle,),
-                    new Text(product.rlsTime.split("T")[0], style: _assFontStyle,),
-                  ],
-                )
-              ],
+                  new Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      new Text(product.keyWord, style: _assFontStyle,),
+                      new Text(product.rlsTime.split("T")[0], style: _assFontStyle,),
+                    ],
+                  )
+                ],
+              )
             )
-          )
-        ],
-      ),
+          ],
+        ),
+      )
     );
   }
 }

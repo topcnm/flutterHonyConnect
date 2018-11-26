@@ -204,16 +204,19 @@ class _NewsDetailWidgetState extends State<NewsDetailWidget> {
   Widget build(BuildContext context) {
     return new Scaffold(
       key: _scaffoldKey,
-      appBar: new AppBar(
-        title: new Text(LocaleUtils.getLocale(context).newsDetailTitle),
-        centerTitle: true,
-        actions: <Widget>[
-          new IconButton(
-              icon: new Icon(IconData(0xe6ba, fontFamily: 'aliFont'), color: emptyColor,),
-              onPressed: null
-          )
-        ],
-      ),
+      appBar: new PreferredSize(
+        preferredSize: Size.fromHeight(ScreenUtil().setHeight(88)),
+        child: new AppBar(
+          title: new Text(LocaleUtils.getLocale(context).newsDetailTitle, style: new TextStyle(fontSize: ScreenUtil().setSp(30))),
+          centerTitle: true,
+          actions: <Widget>[
+            new IconButton(
+                icon: new Icon(IconData(0xe6ba, fontFamily: 'aliFont'), color: emptyColor,),
+                onPressed: null
+            )
+          ],
+        ),
+      ) ,
       body: new ListView(
         children: <Widget>[
           new Container(

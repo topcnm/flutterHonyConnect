@@ -156,10 +156,13 @@ class _PersonalPageWidgetState extends State<PersonalPageWidget> {
       fit: StackFit.expand,
       children: <Widget>[
         new Scaffold(
-          appBar: new AppBar(
-            title: new Text('My Personal Information'),
-            centerTitle: true,
-          ),
+          appBar: new PreferredSize(
+            preferredSize: Size.fromHeight(ScreenUtil().setHeight(88)),
+            child: new AppBar(
+              title: new Text('My Personal Information', style: new TextStyle(fontSize: ScreenUtil().setSp(30))),
+              centerTitle: true,
+            ),
+          ) ,
           body: new ListView(
             children: <Widget>[
               new Container(

@@ -73,9 +73,13 @@ class _HomePageWidgetState extends State<HomePageWidget> with SingleTickerProvid
 
     return new GestureDetector(
       child: new Scaffold(
-        appBar: new AppBar(
-          title: new Text(pageTitle),
-        ),
+        appBar: new PreferredSize(
+          preferredSize: Size.fromHeight(ScreenUtil().setHeight(88)),
+          child: new AppBar(
+            title: new Text(pageTitle, style: new TextStyle(fontSize: ScreenUtil().setSp(30))),
+            centerTitle: true,
+          ),
+        ) ,
         drawer: new Drawer(
           child: new ListView(
             children: <Widget>[
