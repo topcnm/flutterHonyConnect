@@ -30,33 +30,19 @@ class HomePageWidget extends StatefulWidget {
   _HomePageWidgetState createState() => _HomePageWidgetState();
 }
 
-class _HomePageWidgetState extends State<HomePageWidget> with SingleTickerProviderStateMixin {
-  TabController _tc;
+class _HomePageWidgetState extends State<HomePageWidget> {
   int _activeIndex = 0;
-  VoidCallback onTabChanged;
+  // VoidCallback onTabChanged;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _tc = new TabController(
-        initialIndex: _activeIndex,
-        length: 2,
-        vsync: this
-    );
-    onTabChanged = (){
-      setState(() {
-        _activeIndex = _tc.index;
-      });
-    };
-    _tc.addListener(onTabChanged);
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _tc.removeListener(onTabChanged);
-    _tc.dispose();
     super.dispose();
   }
 
@@ -65,6 +51,12 @@ class _HomePageWidgetState extends State<HomePageWidget> with SingleTickerProvid
       case 0: return LocaleUtils.getLocale(context).newsIndexTitle;
       case 1: return LocaleUtils.getLocale(context).investIndexTitle;
     }
+  }
+
+  void handleTabChange(int i) {
+    setState(() {
+      _activeIndex = i;
+    });
   }
 
   @override
@@ -120,24 +112,28 @@ class _HomePageWidgetState extends State<HomePageWidget> with SingleTickerProvid
           children: [
             new NewsIndexPage(),
             new InvestIndexPage(),
-            // new MinePage(),
           ]
         ),
-        bottomNavigationBar: new Material(
-          color: bottomNavColor,
-            child: new TabBar(
-              controller: _tc,
-              indicator: new UnderlineTabIndicator(
-                borderSide: new BorderSide(width: 0.0),
+        bottomNavigationBar: new Container(
+          child: new Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              new CustomTabItem(
+                _activeIndex == 0, 
+                IconData(0xe86e, fontFamily: 'aliFont'), 
+                LocaleUtils.getLocale(context).newsIndexTitle,
+                () { handleTabChange(0);}
               ),
-              tabs: <Widget>[
-                new CustomTabItem(_activeIndex == 0, IconData(0xe86e, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).newsIndexTitle),
-                new CustomTabItem(_activeIndex == 1, IconData(0xe67d, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).investIndexTitle),
-//                new CustomTabItem(_activeIndex == 2, IconData(0xe62c, fontFamily: 'aliFont'), "Asset"),
-                // new CustomTabItem(_activeIndex == 2, IconData(0xe6b6, fontFamily: 'aliFont'), LocaleUtils.getLocale(context).mineTitle),
-              ]
-            )
-        ),
+              new CustomTabItem(
+                _activeIndex == 1, 
+                IconData(0xe67d, fontFamily: 'aliFont'), 
+                LocaleUtils.getLocale(context).investIndexTitle,
+                () { handleTabChange(1);}
+              )
+            ],
+          ),
+        )
       ),
     );
   }
@@ -147,11 +143,13 @@ class CustomTabItem extends StatelessWidget {
   final IconData _iconData;
   final String _textData;
   final bool _active;
+  final Function _onTap;
 
   CustomTabItem(
       this._active,
       this._iconData,
       this._textData,
+      this._onTap,
       {
         Key key
       }
@@ -159,82 +157,41 @@ class CustomTabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      width: double.infinity,
-      height: ScreenUtil().setWidth(100),
-      color: _active ? primaryColor : bottomNavColor,
-      child: new Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          new Icon(
-            _iconData,
-            size: ScreenUtil().setWidth(40),
-          ),
-          new Padding(
-              padding: EdgeInsets.only(
-                  top: ScreenUtil().setWidth(2)
+    return new Expanded(
+      flex: 1,
+      child: new Container(
+        width: double.infinity,
+        height: ScreenUtil().setWidth(100),
+        color: _active ? primaryColor : bottomNavColor,
+        child: new InkWell(
+          onTap: this._onTap,
+          child:new Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              new Icon(
+                _iconData,
+                size: ScreenUtil().setWidth(40),
+                color: Colors.white,
+              ),
+              new Padding(
+                  padding: EdgeInsets.only(
+                      top: ScreenUtil().setWidth(2)
+                  )
+              ),
+              new Text(
+                _textData,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: new TextStyle(
+                  fontSize: ScreenUtil().setWidth(22),
+                  height: 0.9,
+                  color: Colors.white
+                ),
               )
-          ),
-          new Text(
-            _textData,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            style: new TextStyle(
-              fontSize: ScreenUtil().setWidth(22),
-              height: 0.9
-            ),
+            ],
           )
-        ],
-      ),
-    );
-  }
-}
-
-
-class APage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: new Text('A page'),
-      ),
-      body: new Text('A page'),
-    );
-  }
-}
-
-class BPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: new Text('B page'),
-      ),
-      body: new Text('B page'),
-    );
-  }
-}
-
-class CPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: new Text('C page'),
-      ),
-      body: new Text('C page'),
-    );
-  }
-}
-
-class DPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: new Text('D page'),
-      ),
-      body: new Text('D page'),
+        ),
+      )
     );
   }
 }
