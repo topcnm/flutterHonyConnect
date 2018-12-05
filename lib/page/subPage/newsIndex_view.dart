@@ -258,7 +258,7 @@ class _NewsComponentState extends State<NewsComponent> {
                         textAlign: TextAlign.left,
                         textDirection: TextDirection.rtl,
                         overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
+                        maxLines: 2,
                         style: new TextStyle(
                           fontSize: ScreenUtil().setWidth(30),
                           fontWeight: FontWeight.bold,
